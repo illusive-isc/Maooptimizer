@@ -11,6 +11,6 @@
   "url": "https://github.com/illusive-isc/MaoOptimizer",
   "vpmDependencies": {
     "nadena.dev.ndmf": "^1.6.0",
-    "com.vrchat.avatars": ">=3.7.0 <3.8.0"
+    "com.vrchat.avatars": ">=3.7.0 "
   }
 }
