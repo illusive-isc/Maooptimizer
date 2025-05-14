@@ -1,6 +1,6 @@
 {
   "name": "jp.illusive-isc.mao-optimizer",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "displayName": "MaoOptimizer",
   "description": "MaoOptimizer",
   "unity": "2022.3",
@@ -11,6 +11,6 @@
   "url": "https://github.com/illusive-isc/MaoOptimizer",
   "vpmDependencies": {
     "nadena.dev.ndmf": "^1.6.0",
-    "com.vrchat.avatars": ">=3.7.0 "
+    "com.vrchat.avatars": ">=3.7.0"
   }
 }
