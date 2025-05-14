@@ -24,6 +24,7 @@ https://illusive-isc.github.io/vpm-repos/
 # 操作方法
 
 ## ↓ 詳しい操作は下記画像リンクをクリックした先の YOUTUBE の動画で確認してください
+Ruruneoptimizerと使い方は同じです
 
 https://www.youtube.com/watch?v=ieIInpVY0iQ
 
