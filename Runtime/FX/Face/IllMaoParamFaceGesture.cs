@@ -64,6 +64,28 @@ namespace jp.illusive_isc.MaoOptimizer
                         layer.stateMachine.states = states;
                     }
 
+                    if (layer.name is "LeftHand" or "RightHand")
+                    {
+                        var states = layer.stateMachine.states;
+
+                        foreach (var state in states)
+                        {
+                            if (state.state.name == "Fist")
+                            {
+                                if (state.state.motion is not BlendTree rootTree)
+                                    continue;
+                                var nestedChild = rootTree.children.First(c =>
+                                    c.motion.name is "Fist_UnLock_L" or "Fist_UnLock_R"
+                                );
+                                var nestedTree = nestedChild.motion as BlendTree;
+
+                                // 子の BlendTree の children を直接入れ替え
+                                rootTree = nestedTree;
+                            }
+                        }
+                        layer.stateMachine.states = states;
+                    }
+
                     var stateMachine = layer.stateMachine;
                     foreach (var t in stateMachine.anyStateTransitions)
                         t.conditions = t.conditions.Where(c => c.parameter != "FaceLock").ToArray();
@@ -83,10 +105,6 @@ namespace jp.illusive_isc.MaoOptimizer
 
         public IllMaoParamFaceGesture DeleteParam()
         {
-            if (FaceGestureFlg || FaceLockFlg)
-                animator.parameters = animator
-                    .parameters.Where(p => !(p.name == "FaceLock"))
-                    .ToArray();
             return this;
         }
 
@@ -95,9 +113,14 @@ namespace jp.illusive_isc.MaoOptimizer
             VRCExpressionParameters param
         )
         {
-            if (FaceGestureFlg || FaceLockFlg)
-                param.parameters = param.parameters.Where(p => !(p.name == "FaceLock")).ToArray();
-
+            foreach (var parameter in param.parameters)
+            {
+                if (parameter.name is "FaceLock")
+                {
+                    parameter.defaultValue = 0;
+                    parameter.networkSynced = false;
+                }
+            }
             foreach (var control in menu.controls)
             {
                 if (control.name == "Gimmick")
