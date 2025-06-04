@@ -1,11 +1,10 @@
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Avatars.ScriptableObjects;
 using VRC.SDKBase;
-using System.Linq;
-
 #if UNITY_EDITOR
 using UnityEditor.Animations;
 
@@ -20,13 +19,74 @@ namespace jp.illusive_isc.MaoOptimizer
         string pathName = "paryi_FX.controller";
 
         [SerializeField]
+        private bool ClothFlg0 = false;
+
+        [SerializeField]
         private bool ClothFlg = false;
+
+        public bool ClothFlg1 = false;
+
+        [SerializeField]
+        private bool ClothFlg2 = false;
+
+        [SerializeField]
+        private bool ClothFlg3 = true;
+
+        [SerializeField]
+        private bool ClothFlg4 = false;
+
+        public bool ClothFlg5 = false;
+
+        [SerializeField]
+        private bool AccessoryFlg0 = false;
 
         [SerializeField]
         private bool AccessoryFlg = false;
 
         [SerializeField]
-        private bool EarTailFlg = false;
+        private bool AccessoryFlg1 = false;
+
+        [SerializeField]
+        private bool AccessoryFlg2 = false;
+
+        [SerializeField]
+        private bool AccessoryFlg3 = false;
+
+        [SerializeField]
+        private bool AccessoryFlg4 = false;
+
+        [SerializeField]
+        private bool AccessoryFlg5 = false;
+
+        [SerializeField]
+        private bool AccessoryFlg6 = false;
+
+        [SerializeField]
+        private bool AccessoryFlg7 = false;
+
+        [SerializeField]
+        private bool EarTailFlg0 = false;
+
+        [SerializeField]
+        private bool EarTailFlg1 = false;
+
+        [SerializeField]
+        private bool EarTailFlg2 = false;
+
+        [SerializeField]
+        private bool EarTailFlg3 = false;
+
+        [SerializeField]
+        private bool EarTailFlg4 = false;
+
+        [SerializeField]
+        private bool HairFlg0 = false;
+
+        [SerializeField]
+        private bool HairFlg1 = false;
+
+        [SerializeField]
+        private bool HairFlg2 = false;
 
         [SerializeField]
         private bool HairFlg = false;
@@ -48,6 +108,12 @@ namespace jp.illusive_isc.MaoOptimizer
 
         [SerializeField]
         private bool BreastSizeFlg = false;
+
+        public bool BreastSizeFlg2 = false;
+
+        public bool BreastSizeFlg3 = false;
+
+        public bool BreastSizeFlg4 = false;
 
         [SerializeField]
         private bool WhiteBreathFlg = false;
@@ -153,7 +219,7 @@ namespace jp.illusive_isc.MaoOptimizer
                 .ParticleOptimize()
                 .DestroyObj();
 
-            if (ClothFlg)
+            if (ClothFlg0 || ClothFlg)
             {
                 IllMaoParamCloth illMaoParamCloth =
                     ScriptableObject.CreateInstance<IllMaoParamCloth>();
@@ -161,10 +227,20 @@ namespace jp.illusive_isc.MaoOptimizer
                     .Initialize(descriptor, controller)
                     .DeleteFxBT()
                     .DeleteParam()
-                    .DeleteVRCExpressions(menu, param)
-                    .DestroyObj();
+                    .DeleteVRCExpressions(menu, param);
+                if (descriptor.transform.Find("tanktop") is Transform itemObj1)
+                {
+                    itemObj1.gameObject.SetActive(ClothFlg1);
+                }
+                if (descriptor.transform.Find("Tsyatu") is Transform itemObj2)
+                {
+                    itemObj2.gameObject.SetActive(ClothFlg5);
+                }
+                if (ClothFlg)
+                    illMaoParamCloth.DestroyObjects(ClothFlg2);
             }
-            if (AccessoryFlg)
+
+            if (AccessoryFlg0)
             {
                 IllMaoParamAccessory illMaoParamAccessory =
                     ScriptableObject.CreateInstance<IllMaoParamAccessory>();
@@ -173,21 +249,30 @@ namespace jp.illusive_isc.MaoOptimizer
                     .DeleteFxBT()
                     .DeleteParam()
                     .DeleteVRCExpressions(menu, param)
-                    .DestroyObj();
+                    .DestroyObj(
+                        AccessoryFlg1,
+                        AccessoryFlg2,
+                        AccessoryFlg3,
+                        AccessoryFlg4,
+                        AccessoryFlg5,
+                        AccessoryFlg6,
+                        AccessoryFlg7
+                    );
             }
-            if (EarTailFlg)
+            if (EarTailFlg0)
             {
                 IllMaoParamEarTail illMaoParamEarTail =
                     ScriptableObject.CreateInstance<IllMaoParamEarTail>();
+                illMaoParamEarTail.Initialize(descriptor, controller);
+                if (EarTailFlg3)
+                    illMaoParamEarTail.DeleteFx();
                 illMaoParamEarTail
-                    .Initialize(descriptor, controller)
-                    .DeleteFx()
                     .DeleteFxBT()
                     .DeleteParam()
-                    .DeleteVRCExpressions(menu, param)
-                    .DestroyObj();
+                    .DeleteVRCExpressions(menu, param, EarTailFlg3)
+                    .DestroyObj(EarTailFlg1, EarTailFlg2, EarTailFlg4);
             }
-            if (HairFlg)
+            if (HairFlg || HairFlg0)
             {
                 IllMaoParamHair illMaoParamHair =
                     ScriptableObject.CreateInstance<IllMaoParamHair>();
@@ -195,8 +280,42 @@ namespace jp.illusive_isc.MaoOptimizer
                     .Initialize(descriptor, controller)
                     .DeleteFxBT()
                     .DeleteParam()
-                    .DeleteVRCExpressions(menu, param)
-                    .DestroyObj();
+                    .DeleteVRCExpressions(menu, param);
+
+                var hair1 = HairFlg1 ? 100 : 0;
+                if (descriptor.transform.Find("hair_base") is Transform itemObj)
+                {
+                    itemObj
+                        .gameObject.GetComponent<SkinnedMeshRenderer>()
+                        .SetBlendShapeWeight(1, hair1);
+                    itemObj
+                        .gameObject.GetComponent<SkinnedMeshRenderer>()
+                        .SetBlendShapeWeight(2, hair1);
+                }
+
+                if (descriptor.transform.Find("hair_long") is Transform itemObj1)
+                {
+                    itemObj1.gameObject.SetActive(HairFlg2);
+                }
+                var hair2 = HairFlg2 ? 100 : 0;
+                if (descriptor.transform.Find("hat") is Transform hair2Obj2)
+                {
+                    hair2Obj2
+                        .gameObject.GetComponent<SkinnedMeshRenderer>()
+                        .SetBlendShapeWeight(1, hair2);
+                }
+                if (descriptor.transform.Find("hair_base") is Transform hair2Obj)
+                {
+                    hair2Obj
+                        .gameObject.GetComponent<SkinnedMeshRenderer>()
+                        .SetBlendShapeWeight(6, hair2);
+                    hair2Obj
+                        .gameObject.GetComponent<SkinnedMeshRenderer>()
+                        .SetBlendShapeWeight(7, hair2);
+                }
+
+                if (HairFlg)
+                    illMaoParamHair.DestroyObj();
             }
             if (knifeFlg)
             {
@@ -324,7 +443,8 @@ namespace jp.illusive_isc.MaoOptimizer
                     .Initialize(descriptor, controller)
                     .DeleteFxBT()
                     .DeleteParam()
-                    .DeleteVRCExpressions(menu, param);
+                    .DeleteVRCExpressions(menu, param)
+                    .ChangeObj(BreastSizeFlg2, BreastSizeFlg3, BreastSizeFlg4);
             }
             if (backlightFlg)
             {
@@ -437,7 +557,7 @@ namespace jp.illusive_isc.MaoOptimizer
                 }
             }
 
-            if (ClothFlg && HairFlg && AccessoryFlg && EarTailFlg)
+            if (ClothFlg0 && HairFlg0 && AccessoryFlg0 && EarTailFlg0)
             {
                 foreach (var control in menu.controls)
                 {
@@ -470,7 +590,21 @@ namespace jp.illusive_isc.MaoOptimizer
                         }
                     }
             }
-
+            if (descriptor.transform.Find("body_b") is Transform body_b)
+            {
+                body_b
+                    .gameObject.GetComponent<SkinnedMeshRenderer>()
+                    .SetBlendShapeWeight(4, ClothFlg3 ? 0 : 100);
+                body_b
+                    .gameObject.GetComponent<SkinnedMeshRenderer>()
+                    .SetBlendShapeWeight(5, ClothFlg3 ? 0 : 100);
+                body_b
+                    .gameObject.GetComponent<SkinnedMeshRenderer>()
+                    .SetBlendShapeWeight(6, ClothFlg4 ? 100 : 0);
+                body_b
+                    .gameObject.GetComponent<SkinnedMeshRenderer>()
+                    .SetBlendShapeWeight(7, ClothFlg4 ? 100 : 0);
+            }
             // 新規に複製した AnimatorController をアセットとして保存
             EditorUtility.SetDirty(controller);
             AssetDatabase.SaveAssets();

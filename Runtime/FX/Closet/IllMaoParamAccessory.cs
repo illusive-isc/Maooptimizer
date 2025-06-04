@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
@@ -22,7 +23,6 @@ namespace jp.illusive_isc.MaoOptimizer
             "mao_glasses",
             "megane up",
             "mask",
-            "mao mask con",
         };
 
         public IllMaoParamAccessory Initialize(
@@ -99,11 +99,76 @@ namespace jp.illusive_isc.MaoOptimizer
             return this;
         }
 
-        public IllMaoParamAccessory DestroyObj()
+        public IllMaoParamAccessory DestroyObj(
+            bool accessoryFlg1,
+            bool accessoryFlg2,
+            bool accessoryFlg3,
+            bool accessoryFlg4,
+            bool accessoryFlg5,
+            bool accessoryFlg6,
+            bool accessoryFlg7
+        )
         {
-            DestroyObj(descriptor.transform.Find("acce"));
-            DestroyObj(descriptor.transform.Find("Armature/Hips/Spine/Chest/Neck/Head/glass"));
-            DestroyObj(descriptor.transform.Find("hat"));
+            if (descriptor.transform.Find("acce") is Transform accessoryObj1)
+                accessoryObj1
+                    .gameObject.GetComponent<SkinnedMeshRenderer>()
+                    .SetBlendShapeWeight(3, accessoryFlg1 ? 0 : 100);
+            if (descriptor.transform.Find("acce") is Transform accessoryObj2)
+                accessoryObj2
+                    .gameObject.GetComponent<SkinnedMeshRenderer>()
+                    .SetBlendShapeWeight(2, accessoryFlg2 ? 0 : 100);
+            if (descriptor.transform.Find("acce") is Transform accessoryObj3)
+                accessoryObj3
+                    .gameObject.GetComponent<SkinnedMeshRenderer>()
+                    .SetBlendShapeWeight(1, accessoryFlg3 ? 0 : 100);
+            if (descriptor.transform.Find("acce") is Transform accessoryObj7)
+                accessoryObj7
+                    .gameObject.GetComponent<SkinnedMeshRenderer>()
+                    .SetBlendShapeWeight(5, accessoryFlg7 ? 0 : 100);
+            if (descriptor.transform.Find("hat") is Transform accessoryObj4)
+            {
+                accessoryObj4.gameObject.SetActive(accessoryFlg4);
+            }
+            if (descriptor.transform.Find("ear") is Transform itemObj1)
+            {
+                itemObj1.gameObject.SetActive(!accessoryFlg4);
+            }
+            if (descriptor.transform.Find("hair_base") is Transform itemObj)
+            {
+                itemObj
+                    .gameObject.GetComponent<SkinnedMeshRenderer>()
+                    .SetBlendShapeWeight(3, accessoryFlg4 ? 100 : 0);
+            }
+            if (
+                descriptor.transform.Find("Armature/Hips/Spine/Chest/Neck/Head/glass")
+                is Transform accessoryObj5
+            )
+            {
+                accessoryObj5.gameObject.SetActive(accessoryFlg5);
+                var PC = accessoryObj5.GetComponent<UnityEngine.Animations.ParentConstraint>();
+                var Source0 = PC.GetSource(0);
+                var Source1 = PC.GetSource(1);
+                var Source2 = PC.GetSource(2);
+
+                Source0.weight = accessoryFlg5
+                    ? accessoryFlg6
+                        ? 0.0f
+                        : 1.0f
+                    : 0.0f;
+                Source1.weight = accessoryFlg6
+                    ? accessoryFlg4
+                        ? 0.0f
+                        : 1.0f
+                    : 0.0f;
+                Source2.weight = accessoryFlg6
+                    ? accessoryFlg4
+                        ? 1.0f
+                        : 0.0f
+                    : 0.0f;
+                PC.SetSource(0, Source0);
+                PC.SetSource(1, Source1);
+                PC.SetSource(2, Source2);
+            }
 
             return this;
         }

@@ -104,17 +104,25 @@ namespace jp.illusive_isc.MaoOptimizer
             return this;
         }
 
-        public IllMaoParamCloth DestroyObj()
+        public IllMaoParamCloth DestroyObjects(bool ClothFlg2)
         {
-            var underwear = descriptor.transform.Find("underwear");
-            if (underwear)
+            if (ClothFlg2)
             {
-                underwear.gameObject.SetActive(true);
+                DestroyObj(descriptor.transform.Find("underwear"));
+                DestroyObj(descriptor.transform.Find("tanktop"));
             }
-            var tanktop = descriptor.transform.Find("tanktop");
-            if (tanktop)
+            else
             {
-                tanktop.gameObject.SetActive(true);
+                var underwear = descriptor.transform.Find("underwear");
+                if (underwear)
+                {
+                    underwear.gameObject.SetActive(true);
+                }
+                var tanktop = descriptor.transform.Find("tanktop");
+                if (tanktop)
+                {
+                    tanktop.gameObject.SetActive(true);
+                }
             }
             DestroyObj(descriptor.transform.Find("outer"));
             DestroyObj(descriptor.transform.Find("Tsyatu"));
