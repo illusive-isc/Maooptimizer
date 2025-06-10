@@ -521,6 +521,7 @@ namespace jp.illusive_isc.MaoOptimizer
                 illMaoParamFaceContact
                     .Initialize(descriptor, controller, kamitukiFlg, nadeFlg)
                     .DeleteFxBT()
+                    .DeleteParam()
                     .DeleteVRCExpressions(menu, param);
             }
             if ((FaceGestureFlg || FaceLockFlg) && kamitukiFlg && nadeFlg)

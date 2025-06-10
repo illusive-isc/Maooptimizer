@@ -50,20 +50,24 @@ namespace jp.illusive_isc.MaoOptimizer
             return this;
         }
 
+        public IllMaoParamFaceContact DeleteParam()
+        {
+            List<string> p = new() { };
+            if (nadeFlg)
+                p.Add("Nade");
+            if (kamitukiFlg)
+                p.Add("Kamituki");
+            animator.parameters = animator
+                .parameters.Where(parameter => !p.Contains(parameter.name))
+                .ToArray();
+            return this;
+        }
+
         public IllMaoParamFaceContact DeleteVRCExpressions(
             VRCExpressionsMenu menu,
             VRCExpressionParameters param
         )
         {
-            foreach (var parameter in param.parameters)
-            {
-                if (parameter.name is "Nade" or "Kamituki")
-                {
-                    parameter.defaultValue = 1;
-                    parameter.networkSynced = false;
-                }
-            }
-
             foreach (var control in menu.controls)
             {
                 if (control.name == "Gimmick")
