@@ -608,6 +608,8 @@ namespace jp.illusive_isc.MaoOptimizer
             }
             // 新規に複製した AnimatorController をアセットとして保存
             EditorUtility.SetDirty(controller);
+            EditorUtility.SetDirty(menu);
+            EditorUtility.SetDirty(param);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
