@@ -608,7 +608,7 @@ namespace jp.illusive_isc.MaoOptimizer
             }
             // 新規に複製した AnimatorController をアセットとして保存
             EditorUtility.SetDirty(controller);
-            EditorUtility.SetDirty(menu);
+            MarkAllMenusDirty(menu);
             EditorUtility.SetDirty(param);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -620,6 +620,22 @@ namespace jp.illusive_isc.MaoOptimizer
             EditorUtility.SetDirty(descriptor);
 
             Debug.Log("最適化を実行しました！");
+        }
+
+        private static void MarkAllMenusDirty(VRCExpressionsMenu menu)
+        {
+            if (menu == null)
+                return;
+
+            EditorUtility.SetDirty(menu);
+
+            foreach (var control in menu.controls)
+            {
+                if (control.subMenu != null)
+                {
+                    MarkAllMenusDirty(control.subMenu);
+                }
+            }
         }
 
         /// <summary>
