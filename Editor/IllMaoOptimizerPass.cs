@@ -8,7 +8,7 @@ namespace jp.illusive_isc.MaoOptimizer
         protected override void Execute(BuildContext context)
         {
             foreach (
-                IllMaoOptimizer IllMaoOptimizer in context.AvatarRootObject.transform.GetComponents<IllMaoOptimizer>()
+                IllMaoOptimizer IllMaoOptimizer in context.AvatarRootObject.GetComponentsInChildren<IllMaoOptimizer>()
             )
             {
                 Object.DestroyImmediate(IllMaoOptimizer.gameObject);
