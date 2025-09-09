@@ -1,10 +1,17 @@
 {
-    "name": "jp.illusive_isc.MaoOptimizer",
+    "name": "jp.illusive_isc.MaoOptimizerEditor",
     "rootNamespace": "jp.illusive_isc.MaoOptimizer",
     "references": [
-        "com.anatawa12.avatar-optimizer.runtime"
+        "jp.illusive_isc.MaoOptimizer",
+        "com.anatawa12.avatar-optimizer.runtime",
+        "nadena.dev.modular-avatar.core",
+        "nadena.dev.ndmf",
+        "nadena.dev.ndmf.runtime",
+        "com.anatawa12.avatar-optimizer.internal.prefab-safe-set.editor"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,

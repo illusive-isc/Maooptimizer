@@ -3,9 +3,12 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Avatars.ScriptableObjects;
 using VRC.SDKBase;
+using Anatawa12.AvatarOptimizer;
+
 #if UNITY_EDITOR
 using UnityEditor.Animations;
 
@@ -99,6 +102,9 @@ namespace jp.illusive_isc.MaoOptimizer
         private bool knifeFlg = false;
 
         [SerializeField]
+        private bool knifeFlg2 = false;
+
+        [SerializeField]
         private bool TPSFlg = false;
 
         [SerializeField]
@@ -157,6 +163,54 @@ namespace jp.illusive_isc.MaoOptimizer
 
         [SerializeField]
         private bool backlightFlg;
+
+        [SerializeField]
+        private bool questFlg1 = false;
+        public bool Butt;
+        public bool Breast;
+        public bool ear_004;
+        public bool ear_hat_006;
+        public bool ahoge;
+        public bool back_long_C;
+        public bool back_long_014;
+        public bool back_long_root_001;
+        public bool front_root;
+        public bool side;
+        public bool side_1_004;
+        public bool side_short_root;
+        public bool glass;
+        public bool mask;
+        public bool neckless;
+        public bool neckless_2;
+        public bool outer;
+        public bool tail;
+        public bool tail_belt;
+        public bool Pants;
+
+        public bool upperArm_collider1;
+        public bool plane_collider1;
+        public bool chest_collider1;
+        public bool plane_collider2;
+        public bool chest_collider2;
+        public bool chestPanel_collider1;
+        public bool chestPanel_collider2;
+        public bool sode_collider;
+        public bool upperleg_collider1;
+        public bool plane_collider3;
+        public bool upperleg_collider2;
+        public bool hip_collider1;
+        public bool chest_collider3;
+        public bool AFK_collider1;
+
+        public bool plane_collider4;
+        public bool upperleg_collider3;
+        public bool lowerleg_collider1;
+        public bool plane_collider5;
+
+        public bool AAORemoveFlg;
+
+        [SerializeField]
+        bool plane_tail_collider;
         public AnimatorController controllerDef;
         public VRCExpressionsMenu menuDef;
         public VRCExpressionParameters paramDef;
@@ -166,6 +220,15 @@ namespace jp.illusive_isc.MaoOptimizer
         public VRCExpressionParameters param;
 
         private string pathDir;
+
+        public enum TextureResizeOption
+        {
+            LowerResolution, // 下げる
+            Delete, // 削除
+        }
+
+        // Inspector で選択する値
+        public TextureResizeOption textureResize = TextureResizeOption.LowerResolution;
 
         public void Execute(VRCAvatarDescriptor descriptor)
         {
@@ -197,7 +260,13 @@ namespace jp.illusive_isc.MaoOptimizer
             {
                 menuDef = descriptor.expressionsMenu;
             }
-            menu = DuplicateExpressionMenu(menuDef, pathDir);
+            Dictionary<string, string> menu1 = new();
+            var iconPath = pathDir + "/icon";
+            if (!Directory.Exists(iconPath))
+            {
+                Directory.CreateDirectory(iconPath);
+            }
+            menu = DuplicateExpressionMenu(menuDef, pathDir, iconPath, questFlg1, textureResize);
 
             // ExpressionParameters の複製
             if (!paramDef)
@@ -313,6 +382,9 @@ namespace jp.illusive_isc.MaoOptimizer
                     hair2Obj
                         .gameObject.GetComponent<SkinnedMeshRenderer>()
                         .SetBlendShapeWeight(7, hair2);
+                    hair2Obj
+                        .gameObject.GetComponent<SkinnedMeshRenderer>()
+                        .SetBlendShapeWeight(8, hair2);
                 }
 
                 if (HairFlg)
@@ -329,6 +401,19 @@ namespace jp.illusive_isc.MaoOptimizer
                     .DeleteParam()
                     .DeleteVRCExpressions(menu, param)
                     .DestroyObj();
+            }
+            if (knifeFlg2)
+            {
+                IllMaoParam.DestroyObj(
+                    descriptor.transform.Find(
+                        "Advanced/knife/4/hand/knife position/knife rotation/light/Spot Light"
+                    )
+                );
+                IllMaoParam.DestroyObj(
+                    descriptor.transform.Find(
+                        "Advanced/knifeL/4/hand/knife position/knife rotation/light/Spot Light"
+                    )
+                );
             }
             if (TPSFlg)
             {
@@ -607,6 +692,435 @@ namespace jp.illusive_isc.MaoOptimizer
                     .gameObject.GetComponent<SkinnedMeshRenderer>()
                     .SetBlendShapeWeight(7, ClothFlg4 ? 100 : 0);
             }
+            if (questFlg1)
+            {
+                IllMaoParam.DestroyObj(descriptor.transform.Find("Advanced/NadeCamera"));
+            }
+            if (Butt)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[] { "Armature/Hips/Butt_L", "Armature/Hips/Butt_R" }
+                );
+            }
+            if (Breast)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/Breast_L",
+                        "Armature/Hips/Spine/Chest/Breast_R",
+                    }
+                );
+            }
+            if (upperArm_collider1)
+            {
+                DelColliderSettingByPathArray(
+                    descriptor,
+                    new string[] { "Upperarm_L", "Upperarm_R" },
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/Breast_L",
+                        "Armature/Hips/Spine/Chest/Breast_R",
+                    }
+                );
+            }
+            if (ear_004)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/Neck/Head/ear_root/ear_L/ear_L.004",
+                        "Armature/Hips/Spine/Chest/Neck/Head/ear_root/ear_R/ear_R.004",
+                    }
+                );
+            }
+            if (ear_hat_006)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/Neck/Head/ear_root_hat/ear_hat_L/ear_hat_L.007/ear_hat_L.006",
+                        "Armature/Hips/Spine/Chest/Neck/Head/ear_root_hat/ear_hat_R/ear_hat_R.007/ear_hat_R.006",
+                    }
+                );
+            }
+            if (ahoge)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[] { "Armature/Hips/Spine/Chest/Neck/Head/hair_root/ahoge" }
+                );
+            }
+            if (back_long_C)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_C.005/back_long_C",
+                    }
+                );
+            }
+            if (plane_collider1)
+            {
+                DelColliderSettingByPathArray(
+                    descriptor,
+                    new string[] { "plane" },
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_C.005/back_long_C",
+                    }
+                );
+            }
+            if (chest_collider1)
+            {
+                DelColliderSettingByPathArray(
+                    descriptor,
+                    new string[] { "Chest" },
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_C.005/back_long_C",
+                    }
+                );
+            }
+            if (back_long_014)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_L.010/back_long_L.014",
+                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_R.010/back_long_R.014",
+                    }
+                );
+            }
+            if (plane_collider2)
+            {
+                DelColliderSettingByPathArray(
+                    descriptor,
+                    new string[] { "plane" },
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_L.010/back_long_L.014",
+                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_R.010/back_long_R.014",
+                    }
+                );
+            }
+            if (chest_collider2)
+            {
+                DelColliderSettingByPathArray(
+                    descriptor,
+                    new string[] { "Chest" },
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_L.010/back_long_L.014",
+                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_R.010/back_long_R.014",
+                    }
+                );
+            }
+            if (back_long_root_001)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_root.001",
+                    }
+                );
+            }
+            if (front_root)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[] { "Armature/Hips/Spine/Chest/Neck/Head/hair_root/front_root" }
+                );
+            }
+            if (side)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/side_long_root/side_L",
+                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/side_long_root/side_R",
+                    }
+                );
+            }
+            if (chestPanel_collider1)
+            {
+                DelColliderSettingByPathArray(
+                    descriptor,
+                    new string[] { "collider" },
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/side_long_root/side_L",
+                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/side_long_root/side_R",
+                    }
+                );
+            }
+            if (side_1_004)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/side_short_root/side_1_L.004",
+                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/side_short_root/side_1_R.004",
+                    }
+                );
+            }
+            if (side_short_root)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/side_short_root/side_short_root.001",
+                    }
+                );
+            }
+            if (chestPanel_collider2)
+            {
+                DelColliderSettingByPathArray(
+                    descriptor,
+                    new string[] { "collider" },
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/side_short_root/side_short_root.001",
+                    }
+                );
+            }
+            if (glass)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[] { "Armature/Hips/Spine/Chest/Neck/Head/glass" }
+                );
+            }
+            if (mask)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[] { "Armature/Hips/Spine/Chest/Neck/Head/mask" }
+                );
+            }
+            if (neckless)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[] { "Armature/Hips/Spine/Chest/Neck/neckless" }
+                );
+            }
+            if (neckless_2)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[] { "Armature/Hips/Spine/Chest/neckless_2" }
+                );
+            }
+            if (outer)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/sholder_L/Upperarm_L/Z_sode_1_L",
+                        "Armature/Hips/Spine/Chest/sholder_R/Upperarm_R/Z_sode_1_R",
+                        "Armature/Hips/Spine/Chest/Z_chest_string_root",
+                        "Armature/Hips/Spine/outer",
+                    }
+                );
+            }
+            if (sode_collider)
+            {
+                DelColliderSettingByPathArray(
+                    descriptor,
+                    new string[] { "sode_collider_L", "sode_collider_R" },
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/sholder_L/Upperarm_L/Z_sode_1_L",
+                        "Armature/Hips/Spine/Chest/sholder_R/Upperarm_R/Z_sode_1_R",
+                        "Armature/Hips/Spine/Chest/Z_chest_string_root",
+                        "Armature/Hips/Spine/outer",
+                    }
+                );
+            }
+            if (upperleg_collider1)
+            {
+                DelColliderSettingByPathArray(
+                    descriptor,
+                    new string[] { "UpperLeg_L_collider", "UpperLeg_R_collider" },
+                    new string[]
+                    {
+                        "Armature/Hips/Spine/Chest/sholder_L/Upperarm_L/Z_sode_1_L",
+                        "Armature/Hips/Spine/Chest/sholder_R/Upperarm_R/Z_sode_1_R",
+                        "Armature/Hips/Spine/Chest/Z_chest_string_root",
+                        "Armature/Hips/Spine/outer",
+                    }
+                );
+            }
+            if (Pants)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[]
+                    {
+                        "Armature/Hips/String/string_L/string_L.004",
+                        "Armature/Hips/String/string_R/string_R.004",
+                        "Armature/Hips/Upperleg_L/Lowerleg_L/String_L",
+                        "Armature/Hips/Upperleg_L/Pants_hook_L",
+                        "Armature/Hips/Upperleg_L/Pants_string_L",
+                        "Armature/Hips/Upperleg_R/Lowerleg_R/String_R",
+                        "Armature/Hips/Upperleg_R/Pants_hook_R",
+                        "Armature/Hips/Upperleg_R/Pants_string_R",
+                    }
+                );
+            }
+            if (plane_collider4)
+            {
+                DelColliderSettingByPathArray(
+                    descriptor,
+                    new string[] { "plane" },
+                    new string[]
+                    {
+                        "Armature/Hips/String/string_L/string_L.004",
+                        "Armature/Hips/String/string_R/string_R.004",
+                        "Armature/Hips/Upperleg_L/Lowerleg_L/String_L",
+                        "Armature/Hips/Upperleg_L/Pants_hook_L",
+                        "Armature/Hips/Upperleg_L/Pants_string_L",
+                        "Armature/Hips/Upperleg_R/Lowerleg_R/String_R",
+                        "Armature/Hips/Upperleg_R/Pants_hook_R",
+                        "Armature/Hips/Upperleg_R/Pants_string_R",
+                    }
+                );
+            }
+            if (upperleg_collider3)
+            {
+                DelColliderSettingByPathArray(
+                    descriptor,
+                    new string[] { "Upperleg_L", "Upperleg_R" },
+                    new string[]
+                    {
+                        "Armature/Hips/String/string_L/string_L.004",
+                        "Armature/Hips/String/string_R/string_R.004",
+                        "Armature/Hips/Upperleg_L/Lowerleg_L/String_L",
+                        "Armature/Hips/Upperleg_L/Pants_hook_L",
+                        "Armature/Hips/Upperleg_L/Pants_string_L",
+                        "Armature/Hips/Upperleg_R/Lowerleg_R/String_R",
+                        "Armature/Hips/Upperleg_R/Pants_hook_R",
+                        "Armature/Hips/Upperleg_R/Pants_string_R",
+                    }
+                );
+            }
+            if (lowerleg_collider1)
+            {
+                DelColliderSettingByPathArray(
+                    descriptor,
+                    new string[] { "Lowerleg_L", "Lowerleg_R" },
+                    new string[]
+                    {
+                        "Armature/Hips/String/string_L/string_L.004",
+                        "Armature/Hips/String/string_R/string_R.004",
+                        "Armature/Hips/Upperleg_L/Lowerleg_L/String_L",
+                        "Armature/Hips/Upperleg_L/Pants_hook_L",
+                        "Armature/Hips/Upperleg_L/Pants_string_L",
+                        "Armature/Hips/Upperleg_R/Lowerleg_R/String_R",
+                        "Armature/Hips/Upperleg_R/Pants_hook_R",
+                        "Armature/Hips/Upperleg_R/Pants_string_R",
+                    }
+                );
+            }
+
+            if (tail)
+            {
+                DelPBByPathArray(descriptor, new string[] { "Armature/Hips/tail/tail.001" });
+            }
+            if (plane_collider3)
+            {
+                DelColliderSettingByPathArray(
+                    descriptor,
+                    new string[] { "plane" },
+                    new string[] { "Armature/Hips/tail/tail.001" }
+                );
+            }
+            if (upperleg_collider2)
+            {
+                DelColliderSettingByPathArray(
+                    descriptor,
+                    new string[] { "Upperleg_L", "Upperleg_R" },
+                    new string[] { "Armature/Hips/tail/tail.001" }
+                );
+            }
+            if (hip_collider1)
+            {
+                DelColliderSettingByPathArray(
+                    descriptor,
+                    new string[] { "Hips" },
+                    new string[] { "Armature/Hips/tail/tail.001" }
+                );
+            }
+            if (chest_collider3)
+            {
+                DelColliderSettingByPathArray(
+                    descriptor,
+                    new string[] { "Chest" },
+                    new string[] { "Armature/Hips/tail/tail.001" }
+                );
+            }
+            if (AFK_collider1)
+            {
+                DelColliderSettingByPathArray(
+                    descriptor,
+                    new string[] { "AFK head collider" },
+                    new string[] { "Armature/Hips/tail/tail.001" }
+                );
+            }
+
+            if (tail_belt)
+            {
+                DelPBByPathArray(
+                    descriptor,
+                    new string[]
+                    {
+                        "Armature/Hips/tail/tail.001/tail.002/tail.003/tail.004/tail.005/tail_belt_L",
+                        "Armature/Hips/tail/tail.001/tail.002/tail.003/tail.004/tail.005/tail_belt_R",
+                    }
+                );
+            }
+
+            if (plane_collider5)
+            {
+                DelColliderSettingByPathArray(
+                    descriptor,
+                    new string[] { "plane" },
+                    new string[]
+                    {
+                        "Armature/Hips/tail/tail.001/tail.002/tail.003/tail.004/tail.005/tail_belt_L",
+                        "Armature/Hips/tail/tail.001/tail.002/tail.003/tail.004/tail.005/tail_belt_R",
+                    }
+                );
+            }
+            if (AAORemoveFlg)
+            {
+#if AVATAR_OPTIMIZER_FOUND
+                if (
+                    !descriptor
+                        .transform.Find("Body")
+                        .TryGetComponent<RemoveMeshByBlendShape>(out var removeMesh)
+                )
+                {
+                    removeMesh = descriptor
+                        .transform.Find("Body")
+                        .gameObject.AddComponent<RemoveMeshByBlendShape>();
+                    removeMesh.Initialize(1);
+                }
+                removeMesh.ShapeKeys.Add("照れ");
+#endif
+            }
             var assetGuids = AssetDatabase.FindAssets(
                 "t:VRCExpressionsMenu",
                 new[] { pathDir + "Menu" }
@@ -653,6 +1167,46 @@ namespace jp.illusive_isc.MaoOptimizer
             Debug.Log("最適化を実行しました！");
         }
 
+        private static void DelColliderSettingByPathArray(
+            VRCAvatarDescriptor descriptor,
+            string[] colliderNames,
+            string[] pbPaths
+        )
+        {
+            foreach (var pbPath in pbPaths)
+            {
+                if (descriptor.transform.Find(pbPath))
+                {
+                    var physBone = descriptor
+                        .transform.Find(pbPath)
+                        .GetComponent<VRCPhysBoneBase>();
+                    if (physBone != null && physBone.colliders != null)
+                    {
+                        foreach (var colliderName in colliderNames)
+                        {
+                            for (int i = physBone.colliders.Count - 1; i >= 0; i--)
+                            {
+                                var collider = physBone.colliders[i];
+                                if (collider != null && collider.name.Contains(colliderName))
+                                {
+                                    physBone.colliders.RemoveAt(i);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void DelPBByPathArray(VRCAvatarDescriptor descriptor, string[] paths)
+        {
+            foreach (var path in paths)
+            {
+                IllMaoParam.DestroyComponent<VRCPhysBoneBase>(descriptor.transform.Find(path));
+            }
+        }
+
         private static void MarkAllMenusDirty(VRCExpressionsMenu menu)
         {
             if (menu == null)
@@ -674,7 +1228,10 @@ namespace jp.illusive_isc.MaoOptimizer
         /// </summary>
         public static VRCExpressionsMenu DuplicateExpressionMenu(
             VRCExpressionsMenu originalMenu,
-            string parentPath
+            string parentPath,
+            string iconPath,
+            bool questFlg1,
+            TextureResizeOption textureResize
         )
         {
             if (originalMenu == null)
@@ -700,10 +1257,54 @@ namespace jp.illusive_isc.MaoOptimizer
                 return newMenu;
             }
             newMenu = Instantiate(originalMenu);
-            // サブメニューの複製
+
+            // サブメニューの複製とアイコンのディープコピー
             for (int i = 0; i < newMenu.controls.Count; i++)
             {
                 var control = newMenu.controls[i];
+                if (questFlg1)
+                {
+                    if (textureResize == TextureResizeOption.LowerResolution)
+                    {
+                        var originalControl = originalMenu.controls[i];
+
+                        // --- アイコンのディープコピー処理 ---
+                        if (originalControl.icon != null)
+                        {
+                            string iconAssetPath = AssetDatabase.GetAssetPath(originalControl.icon);
+                            if (!string.IsNullOrEmpty(iconAssetPath))
+                            {
+                                string iconFileName = Path.GetFileName(iconAssetPath);
+                                string destPath = Path.Combine(iconPath, iconFileName);
+                                // 既にコピー済みでなければコピー
+                                if (!File.Exists(destPath))
+                                {
+                                    File.Copy(iconAssetPath, destPath, true);
+                                    AssetDatabase.ImportAsset(destPath);
+                                }
+                                // コピーしたアイコンをロードしてcontrol.iconにセット
+                                var copiedIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(destPath);
+                                if (copiedIcon != null)
+                                {
+                                    // Max Sizeを変更
+                                    var importer =
+                                        AssetImporter.GetAtPath(destPath) as TextureImporter;
+                                    if (importer != null)
+                                    {
+                                        importer.maxTextureSize = 32;
+                                        importer.SaveAndReimport();
+                                    }
+                                    control.icon = copiedIcon;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        control.icon = null;
+                    }
+                }
+                // サブメニューの複製
                 if (control.subMenu != null)
                 {
                     string subMenuFolderPath = Path.Combine(menuFolderPath, control.subMenu.name);
@@ -713,7 +1314,13 @@ namespace jp.illusive_isc.MaoOptimizer
                         );
                     if (existingSubMenu == null)
                     {
-                        control.subMenu = DuplicateExpressionMenu(control.subMenu, menuFolderPath);
+                        control.subMenu = DuplicateExpressionMenu(
+                            control.subMenu,
+                            menuFolderPath,
+                            iconPath,
+                            questFlg1,
+                            textureResize
+                        );
                     }
                     else
                     {

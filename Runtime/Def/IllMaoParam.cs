@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
+using VRC.Dynamics;
+
 #if UNITY_EDITOR
 using UnityEditor.Animations;
 
@@ -88,6 +90,42 @@ namespace jp.illusive_isc.MaoOptimizer
             {
                 DestroyObj(obj);
             }
+        }
+
+        public static void DestroyComponent<T>(Transform obj)
+            where T : Component
+        {
+            if (obj)
+            {
+                var components = obj.GetComponents<T>();
+                foreach (var component in components)
+                {
+                    DestroyImmediate(component);
+                }
+            }
+        }
+
+        public static void DestroyComponent(Component obj)
+        {
+            if (obj)
+            {
+                DestroyImmediate(obj);
+            }
+        }
+
+        public static void DestroyPB(Transform obj)
+        {
+            DestroyPB(obj, true);
+        }
+
+        public static void DestroyPB(Transform obj, bool includeActive)
+        {
+            if (obj)
+                foreach (var fx in obj.GetComponentsInChildren<VRCPhysBoneBase>(true))
+                {
+                    if (fx.enabled == includeActive)
+                        DestroyComponent(fx);
+                }
         }
 
         protected bool CheckBT(Motion motion, List<string> strings)

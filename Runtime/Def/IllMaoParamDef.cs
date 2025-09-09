@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Avatars.ScriptableObjects;
 #if UNITY_EDITOR
@@ -267,6 +268,17 @@ namespace jp.illusive_isc.MaoOptimizer
             DestroyObj(descriptor.transform.Find("Advanced/Gimmick2/5"));
             DestroyObj(descriptor.transform.Find("Advanced/Gimmick2/6"));
             DestroyObj(descriptor.transform.Find("Advanced/Gimmick2/7"));
+
+            DestroyPB(
+                descriptor.transform.Find("Armature/Hips/String/string_L/string_L.004"),
+                false
+            );
+            DestroyPB(
+                descriptor.transform.Find("Armature/Hips/String/string_R/string_R.004"),
+                false
+            );
+            DestroyPB(descriptor.transform.Find("Armature/Hips/Upperleg_L/Pants_string_L"), false);
+            DestroyPB(descriptor.transform.Find("Armature/Hips/Upperleg_R/Pants_string_R"), false);
 
             return this;
         }
