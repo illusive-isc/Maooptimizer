@@ -177,8 +177,6 @@ namespace jp.illusive_isc.MaoOptimizer
             DestroyObj(descriptor.transform.Find("Advanced/Particle/7"));
             DestroyObj(descriptor.transform.Find("Advanced/Constraint/Index_R_Constraint"));
             DestroyObj(descriptor.transform.Find("Advanced/Constraint/Index_L_Constraint"));
-            DestroyObj(descriptor.transform.Find("Advanced/Constraint/Hand_R_Constraint0"));
-            DestroyObj(descriptor.transform.Find("Advanced/Constraint/Hand_L_Constraint0"));
             return this;
         }
     }

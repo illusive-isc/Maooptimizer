@@ -1,14 +1,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Anatawa12.AvatarOptimizer;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Avatars.ScriptableObjects;
 using VRC.SDKBase;
-using Anatawa12.AvatarOptimizer;
-
 #if UNITY_EDITOR
 using UnityEditor.Animations;
 
@@ -588,6 +587,15 @@ namespace jp.illusive_isc.MaoOptimizer
                     .DeleteParam()
                     .DeleteVRCExpressions(menu, param)
                     .DestroyObj();
+            }
+            if (HeartGunFlg && PenCtrlFlg)
+            {
+                IllMaoParam.DestroyObj(
+                    descriptor.transform.Find("Advanced/Constraint/Hand_R_Constraint0")
+                );
+                IllMaoParam.DestroyObj(
+                    descriptor.transform.Find("Advanced/Constraint/Hand_L_Constraint0")
+                );
             }
 
             if (FaceGestureFlg || FaceLockFlg)
