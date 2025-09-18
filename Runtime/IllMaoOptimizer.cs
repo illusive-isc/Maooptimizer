@@ -588,7 +588,7 @@ namespace jp.illusive_isc.MaoOptimizer
                     .DeleteVRCExpressions(menu, param)
                     .DestroyObj();
             }
-            if (HeartGunFlg && PenCtrlFlg)
+            if (HeartGunFlg && PenCtrlFlg && knifeFlg)
             {
                 IllMaoParam.DestroyObj(
                     descriptor.transform.Find("Advanced/Constraint/Hand_R_Constraint0")
