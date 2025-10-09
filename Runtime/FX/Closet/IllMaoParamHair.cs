@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using VRC.Dynamics;
+using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Avatars.ScriptableObjects;
 #if UNITY_EDITOR
@@ -12,6 +12,9 @@ namespace jp.illusive_isc.MaoOptimizer
     {
         VRCAvatarDescriptor descriptor;
         AnimatorController animator;
+        bool HairFlg;
+        bool HairFlg1;
+        bool HairFlg2;
         private static readonly List<string> MenuParameters = new()
         {
             "mao_HairLong",
@@ -23,11 +26,15 @@ namespace jp.illusive_isc.MaoOptimizer
 
         public IllMaoParamHair Initialize(
             VRCAvatarDescriptor descriptor,
-            AnimatorController animator
+            AnimatorController animator,
+            IllMaoOptimizer optimizer
         )
         {
             this.descriptor = descriptor;
             this.animator = animator;
+            HairFlg = optimizer.HairFlg;
+            HairFlg1 = optimizer.HairFlg1;
+            HairFlg2 = optimizer.HairFlg2;
             return this;
         }
 
@@ -100,11 +107,49 @@ namespace jp.illusive_isc.MaoOptimizer
             return this;
         }
 
-        public IllMaoParamHair DestroyObj()
+        public IllMaoParamHair ChangeObj()
         {
-            DestroyObj(descriptor.transform.Find("hair_base"));
-            DestroyObj(descriptor.transform.Find("hair_long"));
-            DestroyObj(descriptor.transform.Find("Advanced/Hair rotation"));
+            var hair1 = HairFlg1 ? 100 : 0;
+            if (descriptor.transform.Find("hair_base") is Transform itemObj)
+            {
+                itemObj
+                    .gameObject.GetComponent<SkinnedMeshRenderer>()
+                    .SetBlendShapeWeight(1, hair1);
+                itemObj
+                    .gameObject.GetComponent<SkinnedMeshRenderer>()
+                    .SetBlendShapeWeight(2, hair1);
+            }
+
+            if (descriptor.transform.Find("hair_long") is Transform itemObj1)
+            {
+                itemObj1.gameObject.SetActive(HairFlg2);
+            }
+            var hair2 = HairFlg2 ? 100 : 0;
+            if (descriptor.transform.Find("hat") is Transform hair2Obj2)
+            {
+                hair2Obj2
+                    .gameObject.GetComponent<SkinnedMeshRenderer>()
+                    .SetBlendShapeWeight(1, hair2);
+            }
+            if (descriptor.transform.Find("hair_base") is Transform hair2Obj)
+            {
+                hair2Obj
+                    .gameObject.GetComponent<SkinnedMeshRenderer>()
+                    .SetBlendShapeWeight(6, hair2);
+                hair2Obj
+                    .gameObject.GetComponent<SkinnedMeshRenderer>()
+                    .SetBlendShapeWeight(7, hair2);
+                hair2Obj
+                    .gameObject.GetComponent<SkinnedMeshRenderer>()
+                    .SetBlendShapeWeight(8, hair2);
+            }
+
+            if (HairFlg)
+            {
+                DestroyObj(descriptor.transform.Find("hair_base"));
+                DestroyObj(descriptor.transform.Find("hair_long"));
+                DestroyObj(descriptor.transform.Find("Advanced/Hair rotation"));
+            }
             return this;
         }
     }

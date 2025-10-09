@@ -14,6 +14,13 @@ namespace jp.illusive_isc.MaoOptimizer
     {
         VRCAvatarDescriptor descriptor;
         AnimatorController animator;
+        bool accessoryFlg1;
+        bool accessoryFlg2;
+        bool accessoryFlg3;
+        bool accessoryFlg4;
+        bool accessoryFlg5;
+        bool accessoryFlg6;
+        bool accessoryFlg7;
         private static readonly List<string> MenuParameters = new()
         {
             "mao_necklace",
@@ -27,11 +34,19 @@ namespace jp.illusive_isc.MaoOptimizer
 
         public IllMaoParamAccessory Initialize(
             VRCAvatarDescriptor descriptor,
-            AnimatorController animator
+            AnimatorController animator,
+            IllMaoOptimizer optimizer
         )
         {
             this.descriptor = descriptor;
             this.animator = animator;
+            accessoryFlg1 = optimizer.AccessoryFlg1;
+            accessoryFlg2 = optimizer.AccessoryFlg2;
+            accessoryFlg3 = optimizer.AccessoryFlg3;
+            accessoryFlg4 = optimizer.AccessoryFlg4;
+            accessoryFlg5 = optimizer.AccessoryFlg5;
+            accessoryFlg6 = optimizer.AccessoryFlg6;
+            accessoryFlg7 = optimizer.AccessoryFlg7;
             return this;
         }
 
@@ -99,14 +114,7 @@ namespace jp.illusive_isc.MaoOptimizer
             return this;
         }
 
-        public IllMaoParamAccessory DestroyObj(
-            bool accessoryFlg1,
-            bool accessoryFlg2,
-            bool accessoryFlg3,
-            bool accessoryFlg4,
-            bool accessoryFlg5,
-            bool accessoryFlg6,
-            bool accessoryFlg7
+        public IllMaoParamAccessory ChangeObj(
         )
         {
             if (descriptor.transform.Find("acce") is Transform accessoryObj1)

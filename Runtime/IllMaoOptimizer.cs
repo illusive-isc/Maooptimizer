@@ -1,16 +1,14 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Avatars.ScriptableObjects;
 using VRC.SDKBase;
 #if UNITY_EDITOR
-#if AVATAR_OPTIMIZER_FOUND
-using Anatawa12.AvatarOptimizer;
-#endif
+
 using UnityEditor.Animations;
 
 namespace jp.illusive_isc.MaoOptimizer
@@ -18,7 +16,6 @@ namespace jp.illusive_isc.MaoOptimizer
     [AddComponentMenu("MaoOptimizer")]
     public class IllMaoOptimizer : MonoBehaviour, IEditorOnly
     {
-        // 保存先のパス設定
         string pathDirPrefix = "Assets/MaoOptimizer/";
         string pathDirSuffix = "/FX/";
         string pathName = "paryi_FX.controller";
@@ -26,13 +23,11 @@ namespace jp.illusive_isc.MaoOptimizer
         [SerializeField]
         private bool ClothFlg0 = false;
 
-        [SerializeField]
-        private bool ClothFlg = false;
+        public bool ClothFlg = false;
 
         public bool ClothFlg1 = false;
 
-        [SerializeField]
-        private bool ClothFlg2 = false;
+        public bool ClothFlg2 = false;
 
         [SerializeField]
         private bool ClothFlg3 = true;
@@ -48,53 +43,38 @@ namespace jp.illusive_isc.MaoOptimizer
         [SerializeField]
         private bool AccessoryFlg = false;
 
-        [SerializeField]
-        private bool AccessoryFlg1 = false;
+        public bool AccessoryFlg1 = false;
 
-        [SerializeField]
-        private bool AccessoryFlg2 = false;
+        public bool AccessoryFlg2 = false;
 
-        [SerializeField]
-        private bool AccessoryFlg3 = false;
+        public bool AccessoryFlg3 = false;
 
-        [SerializeField]
-        private bool AccessoryFlg4 = false;
+        public bool AccessoryFlg4 = false;
 
-        [SerializeField]
-        private bool AccessoryFlg5 = false;
+        public bool AccessoryFlg5 = false;
 
-        [SerializeField]
-        private bool AccessoryFlg6 = false;
+        public bool AccessoryFlg6 = false;
 
-        [SerializeField]
-        private bool AccessoryFlg7 = false;
+        public bool AccessoryFlg7 = false;
 
         [SerializeField]
         private bool EarTailFlg0 = false;
 
-        [SerializeField]
-        private bool EarTailFlg1 = false;
+        public bool EarTailFlg1 = false;
 
-        [SerializeField]
-        private bool EarTailFlg2 = false;
+        public bool EarTailFlg2 = false;
 
-        [SerializeField]
-        private bool EarTailFlg3 = false;
+        public bool EarTailFlg3 = false;
 
-        [SerializeField]
-        private bool EarTailFlg4 = false;
+        public bool EarTailFlg4 = false;
 
-        [SerializeField]
-        private bool HairFlg0 = false;
+        public bool HairFlg0 = false;
 
-        [SerializeField]
-        private bool HairFlg1 = false;
+        public bool HairFlg1 = false;
 
-        [SerializeField]
-        private bool HairFlg2 = false;
+        public bool HairFlg2 = false;
 
-        [SerializeField]
-        private bool HairFlg = false;
+        public bool HairFlg = false;
 
         [SerializeField]
         private bool TailFlg = false;
@@ -132,26 +112,21 @@ namespace jp.illusive_isc.MaoOptimizer
         [SerializeField]
         private bool PenCtrlFlg = false;
 
-        [SerializeField]
-        private bool HeartGunFlg = false;
+        public bool HeartGunFlg = false;
 
         [SerializeField]
         private bool FaceFlg = false;
 
-        [SerializeField]
-        private bool FaceGestureFlg = false;
+        public bool FaceGestureFlg = false;
 
-        [SerializeField]
-        private bool FaceLockFlg = false;
+        public bool FaceLockFlg = false;
 
         [SerializeField]
         private bool FaceValFlg = false;
 
-        [SerializeField]
-        private bool kamitukiFlg = false;
+        public bool kamitukiFlg = false;
 
-        [SerializeField]
-        private bool nadeFlg = false;
+        public bool nadeFlg = false;
 
         [SerializeField]
         private bool candyFlg = false;
@@ -165,8 +140,7 @@ namespace jp.illusive_isc.MaoOptimizer
         [SerializeField]
         private bool backlightFlg;
 
-        [SerializeField]
-        private bool questFlg1 = false;
+        public bool questFlg1 = false;
         public bool Butt;
         public bool Breast;
         public bool ear_004;
@@ -224,371 +198,55 @@ namespace jp.illusive_isc.MaoOptimizer
 
         public enum TextureResizeOption
         {
-            LowerResolution, // 下げる
-            Delete, // 削除
+            LowerResolution,
+            Delete,
         }
 
-        // Inspector で選択する値
         public TextureResizeOption textureResize = TextureResizeOption.LowerResolution;
+
+        private static readonly Dictionary<
+            System.Type,
+            System.Reflection.MethodInfo[]
+        > methodCache = new();
 
         public void Execute(VRCAvatarDescriptor descriptor)
         {
-            // 保存先ディレクトリの作成
-            pathDir = pathDirPrefix + descriptor.gameObject.name + pathDirSuffix;
-            if (AssetDatabase.LoadAssetAtPath<AnimatorController>(pathDir + pathName) != null)
-            {
-                AssetDatabase.DeleteAsset(pathDir + pathName);
-                AssetDatabase.DeleteAsset(pathDir + "Menu");
-                AssetDatabase.DeleteAsset(pathDir + "paryi_paraments.asset");
-            }
-            if (!Directory.Exists(pathDir))
-            {
-                Directory.CreateDirectory(pathDir);
-            }
+            var stopwatch = Stopwatch.StartNew();
+            var stepTimes = new Dictionary<string, long>();
 
-            // 基本コントローラの参照取得（なければ baseAnimationLayers[4] から取得）
-            if (!controllerDef)
-            {
-                controllerDef =
-                    descriptor.baseAnimationLayers[4].animatorController as AnimatorController;
-            }
-            AssetDatabase.CopyAsset(AssetDatabase.GetAssetPath(controllerDef), pathDir + pathName);
+            var step1 = Stopwatch.StartNew();
+            InitializeAssets(descriptor);
+            step1.Stop();
+            stepTimes["InitializeAssets"] = step1.ElapsedMilliseconds;
 
-            controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(pathDir + pathName);
-
-            // ExpressionMenu の複製
-            if (!menuDef)
+            var step2 = Stopwatch.StartNew();
+            foreach (var config in GetParamConfigs(descriptor))
             {
-                menuDef = descriptor.expressionsMenu;
-            }
-
-            var iconPath = pathDir + "/icon";
-            if (!Directory.Exists(iconPath))
-            {
-                Directory.CreateDirectory(iconPath);
-            }
-            menu = DuplicateExpressionMenu(menuDef, pathDir, iconPath, questFlg1, textureResize);
-
-            // ExpressionParameters の複製
-            if (!paramDef)
-            {
-                paramDef = descriptor.expressionParameters;
-                paramDef.name = descriptor.expressionParameters.name;
-            }
-            param = ScriptableObject.CreateInstance<VRCExpressionParameters>();
-            EditorUtility.CopySerialized(paramDef, param);
-            param.name = paramDef.name;
-            EditorUtility.SetDirty(param);
-            AssetDatabase.CreateAsset(param, pathDir + param.name + ".asset");
-            IllMaoParamDef illMaoParamDef = ScriptableObject.CreateInstance<IllMaoParamDef>();
-            illMaoParamDef
-                .Initialize(descriptor, controller)
-                .DeleteFx()
-                .DeleteFxBT()
-                .DeleteParam()
-                .DeleteVRCExpressions(menu, param)
-                .ParticleOptimize()
-                .DestroyObj();
-
-            if (ClothFlg0 || ClothFlg)
-            {
-                IllMaoParamCloth illMaoParamCloth =
-                    ScriptableObject.CreateInstance<IllMaoParamCloth>();
-                illMaoParamCloth
-                    .Initialize(descriptor, controller)
-                    .DeleteFxBT()
-                    .DeleteParam()
-                    .DeleteVRCExpressions(menu, param);
-                if (descriptor.transform.Find("tanktop") is Transform itemObj1)
+                if (config.condition())
                 {
-                    itemObj1.gameObject.SetActive(ClothFlg1);
+                    config.processAction();
                 }
-                if (descriptor.transform.Find("Tsyatu") is Transform itemObj2)
-                {
-                    itemObj2.gameObject.SetActive(ClothFlg5);
-                }
-                if (ClothFlg)
-                    illMaoParamCloth.DestroyObjects(ClothFlg2);
+                config.afterAction?.Invoke();
             }
 
-            if (AccessoryFlg0)
-            {
-                IllMaoParamAccessory illMaoParamAccessory =
-                    ScriptableObject.CreateInstance<IllMaoParamAccessory>();
-                illMaoParamAccessory
-                    .Initialize(descriptor, controller)
-                    .DeleteFxBT()
-                    .DeleteParam()
-                    .DeleteVRCExpressions(menu, param)
-                    .DestroyObj(
-                        AccessoryFlg1,
-                        AccessoryFlg2,
-                        AccessoryFlg3,
-                        AccessoryFlg4,
-                        AccessoryFlg5,
-                        AccessoryFlg6,
-                        AccessoryFlg7
-                    );
-            }
-            if (EarTailFlg0)
-            {
-                IllMaoParamEarTail illMaoParamEarTail =
-                    ScriptableObject.CreateInstance<IllMaoParamEarTail>();
-                illMaoParamEarTail.Initialize(descriptor, controller);
-                if (EarTailFlg3)
-                    illMaoParamEarTail.DeleteFx();
-                illMaoParamEarTail
-                    .DeleteFxBT()
-                    .DeleteParam()
-                    .DeleteVRCExpressions(menu, param, EarTailFlg3)
-                    .DestroyObj(EarTailFlg1, EarTailFlg2, EarTailFlg4);
-            }
-            if (HairFlg || HairFlg0)
-            {
-                IllMaoParamHair illMaoParamHair =
-                    ScriptableObject.CreateInstance<IllMaoParamHair>();
-                illMaoParamHair
-                    .Initialize(descriptor, controller)
-                    .DeleteFxBT()
-                    .DeleteParam()
-                    .DeleteVRCExpressions(menu, param);
-
-                var hair1 = HairFlg1 ? 100 : 0;
-                if (descriptor.transform.Find("hair_base") is Transform itemObj)
-                {
-                    itemObj
-                        .gameObject.GetComponent<SkinnedMeshRenderer>()
-                        .SetBlendShapeWeight(1, hair1);
-                    itemObj
-                        .gameObject.GetComponent<SkinnedMeshRenderer>()
-                        .SetBlendShapeWeight(2, hair1);
-                }
-
-                if (descriptor.transform.Find("hair_long") is Transform itemObj1)
-                {
-                    itemObj1.gameObject.SetActive(HairFlg2);
-                }
-                var hair2 = HairFlg2 ? 100 : 0;
-                if (descriptor.transform.Find("hat") is Transform hair2Obj2)
-                {
-                    hair2Obj2
-                        .gameObject.GetComponent<SkinnedMeshRenderer>()
-                        .SetBlendShapeWeight(1, hair2);
-                }
-                if (descriptor.transform.Find("hair_base") is Transform hair2Obj)
-                {
-                    hair2Obj
-                        .gameObject.GetComponent<SkinnedMeshRenderer>()
-                        .SetBlendShapeWeight(6, hair2);
-                    hair2Obj
-                        .gameObject.GetComponent<SkinnedMeshRenderer>()
-                        .SetBlendShapeWeight(7, hair2);
-                    hair2Obj
-                        .gameObject.GetComponent<SkinnedMeshRenderer>()
-                        .SetBlendShapeWeight(8, hair2);
-                }
-
-                if (HairFlg)
-                    illMaoParamHair.DestroyObj();
-            }
-            if (knifeFlg)
-            {
-                IllMaoParamknife illMaoParamKIllMaoParamknife =
-                    ScriptableObject.CreateInstance<IllMaoParamknife>();
-                illMaoParamKIllMaoParamknife
-                    .Initialize(descriptor, controller)
-                    .DeleteFx()
-                    .DeleteFxBT()
-                    .DeleteParam()
-                    .DeleteVRCExpressions(menu, param)
-                    .DestroyObj();
-            }
-            if (knifeFlg2)
-            {
-                IllMaoParam.DestroyObj(
-                    descriptor.transform.Find(
-                        "Advanced/knife/4/hand/knife position/knife rotation/light/Spot Light"
-                    )
-                );
-                IllMaoParam.DestroyObj(
-                    descriptor.transform.Find(
-                        "Advanced/knifeL/4/hand/knife position/knife rotation/light/Spot Light"
-                    )
-                );
-            }
-            if (TPSFlg)
-            {
-                IllMaoParamTPS illMaoParamTPS = ScriptableObject.CreateInstance<IllMaoParamTPS>();
-                illMaoParamTPS
-                    .Initialize(descriptor, controller)
-                    .DeleteFxBT()
-                    .DeleteParam()
-                    .DeleteVRCExpressions(menu, param)
-                    .DestroyObj();
-            }
-            if (ClairvoyanceFlg)
-            {
-                IllMaoParamClairvoyance illMaoParamClairvoyance =
-                    ScriptableObject.CreateInstance<IllMaoParamClairvoyance>();
-                illMaoParamClairvoyance
-                    .Initialize(descriptor, controller)
-                    .DeleteFxBT()
-                    .DeleteParam()
-                    .DeleteVRCExpressions(menu, param)
-                    .DestroyObj();
-            }
             if (TPSFlg & ClairvoyanceFlg)
             {
-                foreach (var control in menu.controls)
-                {
-                    if (control.name == "Gimmick")
-                    {
-                        var expressionsSubMenu = control.subMenu;
-
-                        foreach (var control2 in expressionsSubMenu.controls)
-                        {
-                            if (control2.name == "camera")
-                            {
-                                expressionsSubMenu.controls.Remove(control2);
-                                break;
-                            }
-                        }
-                        control.subMenu = expressionsSubMenu;
-                        break;
-                    }
-                }
                 var targetLayer = controller.layers.FirstOrDefault(l => l.name == "MainCtrlTree");
                 foreach (var state in targetLayer.stateMachine.states)
                 {
                     if (state.state.motion is not BlendTree rootTree)
                         continue;
-                    rootTree.children = rootTree
-                        .children.Where(c => !(c.motion.name == "VRMode"))
-                        .ToArray();
-                }
-            }
-            if (candyFlg)
-            {
-                IllMaoParamCandy illMaoParamCIllMaoParamCandy =
-                    ScriptableObject.CreateInstance<IllMaoParamCandy>();
-                illMaoParamCIllMaoParamCandy
-                    .Initialize(descriptor, controller)
-                    .DeleteFxBT()
-                    .DeleteParam()
-                    .DeleteVRCExpressions(menu, param)
-                    .DestroyObj();
-            }
-            if (gamFlg)
-            {
-                IllMaoParamGam illMaoParamGamIllMaoParamGam =
-                    ScriptableObject.CreateInstance<IllMaoParamGam>();
-                illMaoParamGamIllMaoParamGam
-                    .Initialize(descriptor, controller)
-                    .DeleteFx()
-                    .DeleteParam()
-                    .DeleteVRCExpressions(menu, param);
-            }
-            if (candyFlg & gamFlg)
-            {
-                foreach (var control in menu.controls)
-                {
-                    if (control.name == "Gimmick")
+
+                    var filteredChildren = new List<ChildMotion>();
+                    foreach (var child in rootTree.children)
                     {
-                        var expressionsSubMenu = control.subMenu;
-
-                        foreach (var control2 in expressionsSubMenu.controls)
+                        if (child.motion.name != "VRMode")
                         {
-                            if (control2.name == "food")
-                            {
-                                expressionsSubMenu.controls.Remove(control2);
-                                break;
-                            }
+                            filteredChildren.Add(child);
                         }
-                        control.subMenu = expressionsSubMenu;
-                        break;
                     }
+                    rootTree.children = filteredChildren.ToArray();
                 }
-            }
-            if (colliderJumpFlg)
-            {
-                IllMaoParamCollider illMaoParamCollider =
-                    ScriptableObject.CreateInstance<IllMaoParamCollider>();
-                illMaoParamCollider
-                    .Initialize(descriptor, controller)
-                    .DeleteFx()
-                    .DeleteFxBT()
-                    .DeleteParam()
-                    .DeleteVRCExpressions(menu, param)
-                    .DestroyObj();
-            }
-
-            if (BreastSizeFlg)
-            {
-                IllMaoParamBreastSize illMaoParamBreastSize =
-                    ScriptableObject.CreateInstance<IllMaoParamBreastSize>();
-                illMaoParamBreastSize
-                    .Initialize(descriptor, controller)
-                    .DeleteFxBT()
-                    .DeleteParam()
-                    .DeleteVRCExpressions(menu, param)
-                    .ChangeObj(BreastSizeFlg2, BreastSizeFlg3, BreastSizeFlg4);
-            }
-            if (backlightFlg)
-            {
-                IllMaoParamBacklight illMaoParamBacklight =
-                    ScriptableObject.CreateInstance<IllMaoParamBacklight>();
-                illMaoParamBacklight
-                    .Initialize(descriptor, controller)
-                    .DeleteFxBT()
-                    .DeleteParam()
-                    .DeleteVRCExpressions(menu, param);
-            }
-            if (WhiteBreathFlg)
-            {
-                IllMaoParamWhiteBreath illMaoParamWhiteBreath =
-                    ScriptableObject.CreateInstance<IllMaoParamWhiteBreath>();
-                illMaoParamWhiteBreath
-                    .Initialize(descriptor, controller)
-                    .DeleteFxBT()
-                    .DeleteParam()
-                    .DeleteVRCExpressions(menu, param)
-                    .DestroyObj();
-            }
-
-            if (eightBitFlg)
-            {
-                IllMaoParam8bit illMaoParam8bit =
-                    ScriptableObject.CreateInstance<IllMaoParam8bit>();
-                illMaoParam8bit
-                    .Initialize(descriptor, controller)
-                    .DeleteFxBT()
-                    .DeleteParam()
-                    .DeleteVRCExpressions(menu, param)
-                    .DestroyObj();
-            }
-            if (HeartGunFlg)
-            {
-                IllMaoParamHeartGun illMaoParamHeartGun =
-                    ScriptableObject.CreateInstance<IllMaoParamHeartGun>();
-                illMaoParamHeartGun
-                    .Initialize(descriptor, controller)
-                    .DeleteFx()
-                    .DeleteFxBT()
-                    .DeleteParam()
-                    .DeleteVRCExpressions(menu, param)
-                    .DestroyObj();
-            }
-            if (PenCtrlFlg)
-            {
-                IllMaoParamPenCtrl illMaoParamPenCtrl =
-                    ScriptableObject.CreateInstance<IllMaoParamPenCtrl>();
-                illMaoParamPenCtrl
-                    .Initialize(descriptor, controller)
-                    .DeleteFx(HeartGunFlg)
-                    .DeleteFxBT()
-                    .DeleteParam()
-                    .DeleteVRCExpressions(menu, param)
-                    .DestroyObj();
             }
             if (HeartGunFlg && PenCtrlFlg && knifeFlg)
             {
@@ -599,49 +257,6 @@ namespace jp.illusive_isc.MaoOptimizer
                     descriptor.transform.Find("Advanced/Constraint/Hand_L_Constraint0")
                 );
             }
-
-            if (FaceGestureFlg || FaceLockFlg)
-            {
-                IllMaoParamFaceGesture illMaoParamFaceGesture =
-                    ScriptableObject.CreateInstance<IllMaoParamFaceGesture>();
-                illMaoParamFaceGesture
-                    .Initialize(descriptor, controller, FaceGestureFlg, FaceLockFlg)
-                    .DeleteFx()
-                    .DeleteParam()
-                    .DeleteVRCExpressions(menu, param);
-            }
-            if (kamitukiFlg || nadeFlg)
-            {
-                IllMaoParamFaceContact illMaoParamFaceContact =
-                    ScriptableObject.CreateInstance<IllMaoParamFaceContact>();
-                illMaoParamFaceContact
-                    .Initialize(descriptor, controller, kamitukiFlg, nadeFlg)
-                    .DeleteFxBT()
-                    .DeleteParam()
-                    .DeleteVRCExpressions(menu, param);
-            }
-            if ((FaceGestureFlg || FaceLockFlg) && kamitukiFlg && nadeFlg)
-            {
-                foreach (var control in menu.controls)
-                {
-                    if (control.name == "Gimmick")
-                    {
-                        var expressionsSubMenu = control.subMenu;
-
-                        foreach (var control2 in expressionsSubMenu.controls)
-                        {
-                            if (control2.name == "Face")
-                            {
-                                expressionsSubMenu.controls.Remove(control2);
-                                break;
-                            }
-                        }
-                        control.subMenu = expressionsSubMenu;
-                        break;
-                    }
-                }
-            }
-
             if (IKUSIA_emote)
             {
                 foreach (var control in menu.controls)
@@ -653,39 +268,28 @@ namespace jp.illusive_isc.MaoOptimizer
                     }
                 }
             }
-
             if (ClothFlg0 && HairFlg0 && AccessoryFlg0 && EarTailFlg0)
             {
-                foreach (var control in menu.controls)
-                {
-                    if (control.name == "closet")
-                    {
-                        menu.controls.Remove(control);
-                        break;
-                    }
-                }
                 var targetLayer = controller.layers.FirstOrDefault(l => l.name == "MainCtrlTree");
                 foreach (var state in targetLayer.stateMachine.states)
                 {
                     if (state.state.motion is not BlendTree rootTree)
                         continue;
-                    rootTree.children = rootTree
-                        .children.Where(c => !(c.motion.name == "mao closet"))
-                        .ToArray();
+
+                    var filteredChildren = new List<ChildMotion>();
+                    foreach (var child in rootTree.children)
+                    {
+                        if (child.motion.name != "mao closet")
+                        {
+                            filteredChildren.Add(child);
+                        }
+                    }
+                    rootTree.children = filteredChildren.ToArray();
                 }
             }
             if (eightBitFlg && PenCtrlFlg && WhiteBreathFlg)
             {
                 IllMaoParam.DestroyObj(descriptor.transform.Find("Advanced/Particle"));
-                if (HeartGunFlg)
-                    foreach (var control in menu.controls)
-                    {
-                        if (control.name == "Particle")
-                        {
-                            menu.controls.Remove(control);
-                            break;
-                        }
-                    }
             }
             if (descriptor.transform.Find("body_b") is Transform body_b)
             {
@@ -702,456 +306,286 @@ namespace jp.illusive_isc.MaoOptimizer
                     .gameObject.GetComponent<SkinnedMeshRenderer>()
                     .SetBlendShapeWeight(7, ClothFlg4 ? 100 : 0);
             }
-            if (questFlg1)
+
+            IllMaoDel4Quest.ProcessPhysicsAndColliders(
+                descriptor,
+                IllMaoDel4Quest.GetPhysicsSettings(this)
+            );
+
+            step2.Stop();
+            stepTimes["editProcessing"] = step2.ElapsedMilliseconds;
+            var step4 = Stopwatch.StartNew();
+            FinalizeAssets(descriptor);
+            step4.Stop();
+            stepTimes["FinalizeAssets"] = step4.ElapsedMilliseconds;
+
+            stopwatch.Stop();
+
+            UnityEngine.Debug.Log(
+                $"最適化を実行しました！総処理時間: {stopwatch.ElapsedMilliseconds}ms ({stopwatch.Elapsed.TotalSeconds:F2}秒)"
+            );
+
+            foreach (var kvp in stepTimes)
             {
-                IllMaoParam.DestroyObj(descriptor.transform.Find("Advanced/NadeCamera"));
+                UnityEngine.Debug.Log($"[Performance] {kvp.Key}: {kvp.Value}ms");
             }
-            if (Butt)
+        }
+
+        private void InitializeAssets(VRCAvatarDescriptor descriptor)
+        {
+            pathDir = pathDirPrefix + descriptor.gameObject.name + pathDirSuffix;
+
+            var assetsToDelete = new[]
             {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[] { "Armature/Hips/Butt_L", "Armature/Hips/Butt_R" }
-                );
+                pathDir + pathName,
+                pathDir + "Menu",
+                pathDir + "paryi_paraments.asset",
             }
-            if (Breast)
+                .Where(path => AssetDatabase.LoadAssetAtPath<Object>(path) != null)
+                .ToArray();
+
+            if (assetsToDelete.Length > 0)
             {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/Breast_L",
-                        "Armature/Hips/Spine/Chest/Breast_R",
-                    }
-                );
-            }
-            if (upperArm_collider1)
-            {
-                DelColliderSettingByPathArray(
-                    descriptor,
-                    new string[] { "Upperarm_L", "Upperarm_R" },
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/Breast_L",
-                        "Armature/Hips/Spine/Chest/Breast_R",
-                    }
-                );
-            }
-            if (ear_004)
-            {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/Neck/Head/ear_root/ear_L/ear_L.004",
-                        "Armature/Hips/Spine/Chest/Neck/Head/ear_root/ear_R/ear_R.004",
-                    }
-                );
-            }
-            if (ear_hat_006)
-            {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/Neck/Head/ear_root_hat/ear_hat_L/ear_hat_L.007/ear_hat_L.006",
-                        "Armature/Hips/Spine/Chest/Neck/Head/ear_root_hat/ear_hat_R/ear_hat_R.007/ear_hat_R.006",
-                    }
-                );
-            }
-            if (ahoge)
-            {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[] { "Armature/Hips/Spine/Chest/Neck/Head/hair_root/ahoge" }
-                );
-            }
-            if (back_long_C)
-            {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_C.005/back_long_C",
-                    }
-                );
-            }
-            if (plane_collider1)
-            {
-                DelColliderSettingByPathArray(
-                    descriptor,
-                    new string[] { "plane" },
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_C.005/back_long_C",
-                    }
-                );
-            }
-            if (chest_collider1)
-            {
-                DelColliderSettingByPathArray(
-                    descriptor,
-                    new string[] { "Chest" },
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_C.005/back_long_C",
-                    }
-                );
-            }
-            if (back_long_014)
-            {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_L.010/back_long_L.014",
-                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_R.010/back_long_R.014",
-                    }
-                );
-            }
-            if (plane_collider2)
-            {
-                DelColliderSettingByPathArray(
-                    descriptor,
-                    new string[] { "plane" },
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_L.010/back_long_L.014",
-                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_R.010/back_long_R.014",
-                    }
-                );
-            }
-            if (chest_collider2)
-            {
-                DelColliderSettingByPathArray(
-                    descriptor,
-                    new string[] { "Chest" },
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_L.010/back_long_L.014",
-                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_R.010/back_long_R.014",
-                    }
-                );
-            }
-            if (back_long_root_001)
-            {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/back_long_root/back_long_root.001",
-                    }
-                );
-            }
-            if (front_root)
-            {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[] { "Armature/Hips/Spine/Chest/Neck/Head/hair_root/front_root" }
-                );
-            }
-            if (side)
-            {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/side_long_root/side_L",
-                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/side_long_root/side_R",
-                    }
-                );
-            }
-            if (chestPanel_collider1)
-            {
-                DelColliderSettingByPathArray(
-                    descriptor,
-                    new string[] { "collider" },
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/side_long_root/side_L",
-                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/side_long_root/side_R",
-                    }
-                );
-            }
-            if (side_1_004)
-            {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/side_short_root/side_1_L.004",
-                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/side_short_root/side_1_R.004",
-                    }
-                );
-            }
-            if (side_short_root)
-            {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/side_short_root/side_short_root.001",
-                    }
-                );
-            }
-            if (chestPanel_collider2)
-            {
-                DelColliderSettingByPathArray(
-                    descriptor,
-                    new string[] { "collider" },
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/Neck/Head/hair_root/side_short_root/side_short_root.001",
-                    }
-                );
-            }
-            if (glass)
-            {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[] { "Armature/Hips/Spine/Chest/Neck/Head/glass" }
-                );
-            }
-            if (mask)
-            {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[] { "Armature/Hips/Spine/Chest/Neck/Head/mask" }
-                );
-            }
-            if (neckless)
-            {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[] { "Armature/Hips/Spine/Chest/Neck/neckless" }
-                );
-            }
-            if (neckless_2)
-            {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[] { "Armature/Hips/Spine/Chest/neckless_2" }
-                );
-            }
-            if (outer)
-            {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/sholder_L/Upperarm_L/Z_sode_1_L",
-                        "Armature/Hips/Spine/Chest/sholder_R/Upperarm_R/Z_sode_1_R",
-                        "Armature/Hips/Spine/Chest/Z_chest_string_root",
-                        "Armature/Hips/Spine/outer",
-                    }
-                );
-            }
-            if (sode_collider)
-            {
-                DelColliderSettingByPathArray(
-                    descriptor,
-                    new string[] { "sode_collider_L", "sode_collider_R" },
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/sholder_L/Upperarm_L/Z_sode_1_L",
-                        "Armature/Hips/Spine/Chest/sholder_R/Upperarm_R/Z_sode_1_R",
-                        "Armature/Hips/Spine/Chest/Z_chest_string_root",
-                        "Armature/Hips/Spine/outer",
-                    }
-                );
-            }
-            if (upperleg_collider1)
-            {
-                DelColliderSettingByPathArray(
-                    descriptor,
-                    new string[] { "UpperLeg_L_collider", "UpperLeg_R_collider" },
-                    new string[]
-                    {
-                        "Armature/Hips/Spine/Chest/sholder_L/Upperarm_L/Z_sode_1_L",
-                        "Armature/Hips/Spine/Chest/sholder_R/Upperarm_R/Z_sode_1_R",
-                        "Armature/Hips/Spine/Chest/Z_chest_string_root",
-                        "Armature/Hips/Spine/outer",
-                    }
-                );
-            }
-            if (Pants)
-            {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[]
-                    {
-                        "Armature/Hips/String/string_L/string_L.004",
-                        "Armature/Hips/String/string_R/string_R.004",
-                        "Armature/Hips/Upperleg_L/Lowerleg_L/String_L",
-                        "Armature/Hips/Upperleg_L/Pants_hook_L",
-                        "Armature/Hips/Upperleg_L/Pants_string_L",
-                        "Armature/Hips/Upperleg_R/Lowerleg_R/String_R",
-                        "Armature/Hips/Upperleg_R/Pants_hook_R",
-                        "Armature/Hips/Upperleg_R/Pants_string_R",
-                    }
-                );
-            }
-            if (plane_collider4)
-            {
-                DelColliderSettingByPathArray(
-                    descriptor,
-                    new string[] { "plane" },
-                    new string[]
-                    {
-                        "Armature/Hips/String/string_L/string_L.004",
-                        "Armature/Hips/String/string_R/string_R.004",
-                        "Armature/Hips/Upperleg_L/Lowerleg_L/String_L",
-                        "Armature/Hips/Upperleg_L/Pants_hook_L",
-                        "Armature/Hips/Upperleg_L/Pants_string_L",
-                        "Armature/Hips/Upperleg_R/Lowerleg_R/String_R",
-                        "Armature/Hips/Upperleg_R/Pants_hook_R",
-                        "Armature/Hips/Upperleg_R/Pants_string_R",
-                    }
-                );
-            }
-            if (upperleg_collider3)
-            {
-                DelColliderSettingByPathArray(
-                    descriptor,
-                    new string[] { "Upperleg_L", "Upperleg_R" },
-                    new string[]
-                    {
-                        "Armature/Hips/String/string_L/string_L.004",
-                        "Armature/Hips/String/string_R/string_R.004",
-                        "Armature/Hips/Upperleg_L/Lowerleg_L/String_L",
-                        "Armature/Hips/Upperleg_L/Pants_hook_L",
-                        "Armature/Hips/Upperleg_L/Pants_string_L",
-                        "Armature/Hips/Upperleg_R/Lowerleg_R/String_R",
-                        "Armature/Hips/Upperleg_R/Pants_hook_R",
-                        "Armature/Hips/Upperleg_R/Pants_string_R",
-                    }
-                );
-            }
-            if (lowerleg_collider1)
-            {
-                DelColliderSettingByPathArray(
-                    descriptor,
-                    new string[] { "Lowerleg_L", "Lowerleg_R" },
-                    new string[]
-                    {
-                        "Armature/Hips/String/string_L/string_L.004",
-                        "Armature/Hips/String/string_R/string_R.004",
-                        "Armature/Hips/Upperleg_L/Lowerleg_L/String_L",
-                        "Armature/Hips/Upperleg_L/Pants_hook_L",
-                        "Armature/Hips/Upperleg_L/Pants_string_L",
-                        "Armature/Hips/Upperleg_R/Lowerleg_R/String_R",
-                        "Armature/Hips/Upperleg_R/Pants_hook_R",
-                        "Armature/Hips/Upperleg_R/Pants_string_R",
-                    }
-                );
+                var failedPaths = new List<string>();
+                AssetDatabase.DeleteAssets(assetsToDelete, failedPaths);
             }
 
-            if (tail)
+            if (!Directory.Exists(pathDir))
             {
-                DelPBByPathArray(descriptor, new string[] { "Armature/Hips/tail/tail.001" });
-            }
-            if (plane_collider3)
-            {
-                DelColliderSettingByPathArray(
-                    descriptor,
-                    new string[] { "plane" },
-                    new string[] { "Armature/Hips/tail/tail.001" }
-                );
-            }
-            if (upperleg_collider2)
-            {
-                DelColliderSettingByPathArray(
-                    descriptor,
-                    new string[] { "Upperleg_L", "Upperleg_R" },
-                    new string[] { "Armature/Hips/tail/tail.001" }
-                );
-            }
-            if (hip_collider1)
-            {
-                DelColliderSettingByPathArray(
-                    descriptor,
-                    new string[] { "Hips" },
-                    new string[] { "Armature/Hips/tail/tail.001" }
-                );
-            }
-            if (chest_collider3)
-            {
-                DelColliderSettingByPathArray(
-                    descriptor,
-                    new string[] { "Chest" },
-                    new string[] { "Armature/Hips/tail/tail.001" }
-                );
-            }
-            if (AFK_collider1)
-            {
-                DelColliderSettingByPathArray(
-                    descriptor,
-                    new string[] { "AFK head collider" },
-                    new string[] { "Armature/Hips/tail/tail.001" }
-                );
+                Directory.CreateDirectory(pathDir);
             }
 
-            if (tail_belt)
+            if (!controllerDef)
             {
-                DelPBByPathArray(
-                    descriptor,
-                    new string[]
-                    {
-                        "Armature/Hips/tail/tail.001/tail.002/tail.003/tail.004/tail.005/tail_belt_L",
-                        "Armature/Hips/tail/tail.001/tail.002/tail.003/tail.004/tail.005/tail_belt_R",
-                    }
-                );
+                controllerDef =
+                    descriptor.baseAnimationLayers[4].animatorController as AnimatorController;
+            }
+            AssetDatabase.CopyAsset(AssetDatabase.GetAssetPath(controllerDef), pathDir + pathName);
+
+            controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(pathDir + pathName);
+
+            if (!menuDef)
+            {
+                menuDef = descriptor.expressionsMenu;
             }
 
-            if (plane_collider5)
+            var iconPath = pathDir + "/icon";
+            if (!Directory.Exists(iconPath))
             {
-                DelColliderSettingByPathArray(
-                    descriptor,
-                    new string[] { "plane" },
-                    new string[]
-                    {
-                        "Armature/Hips/tail/tail.001/tail.002/tail.003/tail.004/tail.005/tail_belt_L",
-                        "Armature/Hips/tail/tail.001/tail.002/tail.003/tail.004/tail.005/tail_belt_R",
-                    }
-                );
+                Directory.CreateDirectory(iconPath);
             }
-            if (AAORemoveFlg)
+            menu = DuplicateExpressionMenu(menuDef, pathDir, iconPath, questFlg1, textureResize);
+
+            if (!paramDef)
             {
-#if AVATAR_OPTIMIZER_FOUND
-                if (
-                    !descriptor
-                        .transform.Find("Body")
-                        .TryGetComponent<RemoveMeshByBlendShape>(out var removeMesh)
-                )
+                paramDef = descriptor.expressionParameters;
+                paramDef.name = descriptor.expressionParameters.name;
+            }
+            param = ScriptableObject.CreateInstance<VRCExpressionParameters>();
+            EditorUtility.CopySerialized(paramDef, param);
+            param.name = paramDef.name;
+            EditorUtility.SetDirty(param);
+            AssetDatabase.CreateAsset(param, pathDir + param.name + ".asset");
+        }
+
+        private struct ParamProcessConfig
+        {
+            public System.Func<bool> condition;
+            public System.Action processAction;
+            public System.Action afterAction;
+        }
+
+        private ParamProcessConfig[] GetParamConfigs(VRCAvatarDescriptor descriptor)
+        {
+            return new ParamProcessConfig[]
+            {
+                new()
                 {
-                    removeMesh = descriptor
-                        .transform.Find("Body")
-                        .gameObject.AddComponent<RemoveMeshByBlendShape>();
-                    removeMesh.Initialize(1);
-                }
-                removeMesh.ShapeKeys.Add("照れ");
-#endif
+                    condition = () => true,
+                    processAction = () => ProcessParam<IllMaoParamDef>(descriptor),
+                },
+                new()
+                {
+                    condition = () => ClothFlg0 || ClothFlg,
+                    processAction = () => ProcessParam<IllMaoParamCloth>(descriptor),
+                },
+                new()
+                {
+                    condition = () => AccessoryFlg0,
+                    processAction = () => ProcessParam<IllMaoParamAccessory>(descriptor),
+                },
+                new()
+                {
+                    condition = () => EarTailFlg0,
+                    processAction = () => ProcessParam<IllMaoParamEarTail>(descriptor),
+                },
+                new()
+                {
+                    condition = () => HairFlg || HairFlg0,
+                    processAction = () => ProcessParam<IllMaoParamHair>(descriptor),
+                },
+                new()
+                {
+                    condition = () => knifeFlg,
+                    processAction = () => ProcessParam<IllMaoParamknife>(descriptor),
+                    afterAction = () =>
+                    {
+                        if (knifeFlg2)
+                        {
+                            IllMaoParam.DestroyObj(
+                                descriptor.transform.Find(
+                                    "Advanced/knife/4/hand/knife position/knife rotation/light/Spot Light"
+                                )
+                            );
+                            IllMaoParam.DestroyObj(
+                                descriptor.transform.Find(
+                                    "Advanced/knifeL/4/hand/knife position/knife rotation/light/Spot Light"
+                                )
+                            );
+                        }
+                    },
+                },
+                new()
+                {
+                    condition = () => TPSFlg,
+                    processAction = () => ProcessParam<IllMaoParamTPS>(descriptor),
+                },
+                new()
+                {
+                    condition = () => ClairvoyanceFlg,
+                    processAction = () => ProcessParam<IllMaoParamClairvoyance>(descriptor),
+                },
+                new()
+                {
+                    condition = () => candyFlg,
+                    processAction = () => ProcessParam<IllMaoParamCandy>(descriptor),
+                },
+                new()
+                {
+                    condition = () => gamFlg,
+                    processAction = () => ProcessParam<IllMaoParamGam>(descriptor),
+                },
+                new()
+                {
+                    condition = () => colliderJumpFlg,
+                    processAction = () => ProcessParam<IllMaoParamCollider>(descriptor),
+                },
+                new()
+                {
+                    condition = () => BreastSizeFlg,
+                    processAction = () => ProcessParam<IllMaoParamBreastSize>(descriptor),
+                },
+                new()
+                {
+                    condition = () => backlightFlg,
+                    processAction = () => ProcessParam<IllMaoParamBacklight>(descriptor),
+                },
+                new()
+                {
+                    condition = () => WhiteBreathFlg,
+                    processAction = () => ProcessParam<IllMaoParamWhiteBreath>(descriptor),
+                },
+                new()
+                {
+                    condition = () => eightBitFlg,
+                    processAction = () => ProcessParam<IllMaoParam8bit>(descriptor),
+                },
+                new()
+                {
+                    condition = () => HeartGunFlg,
+                    processAction = () => ProcessParam<IllMaoParamHeartGun>(descriptor),
+                },
+                new()
+                {
+                    condition = () => PenCtrlFlg,
+                    processAction = () => ProcessParam<IllMaoParamPenCtrl>(descriptor),
+                },
+                new()
+                {
+                    condition = () => FaceGestureFlg || FaceLockFlg,
+                    processAction = () => ProcessParam<IllMaoParamFaceGesture>(descriptor),
+                },
+                new()
+                {
+                    condition = () => kamitukiFlg || nadeFlg,
+                    processAction = () => ProcessParam<IllMaoParamFaceContact>(descriptor),
+                },
+            };
+        }
+
+        private void ProcessParam<T>(VRCAvatarDescriptor descriptor)
+            where T : ScriptableObject
+        {
+            var instance = ScriptableObject.CreateInstance<T>();
+            var type = typeof(T);
+
+            if (!methodCache.TryGetValue(type, out var methods))
+            {
+                methods = new[]
+                {
+                    type.GetMethod("Initialize"),
+                    type.GetMethod("DeleteFx"),
+                    type.GetMethod("DeleteFxBT"),
+                    type.GetMethod("DeleteParam"),
+                    type.GetMethod("DeleteVRCExpressions"),
+                    type.GetMethod("ParticleOptimize"),
+                    type.GetMethod("ChangeObj"),
+                };
+                methodCache[type] = methods;
             }
 
+            var initializeMethod = methods[0];
+            var deleteFxMethod = methods[1];
+            var deleteFxBTMethod = methods[2];
+            var deleteParamMethod = methods[3];
+            var deleteVRCExpressionsMethod = methods[4];
+            var ParticleOptimizeMethod = methods[5];
+            var changeObjMethod = methods[6];
+
+            if (initializeMethod != null)
+            {
+                try
+                {
+                    int count = initializeMethod.GetParameters().Length;
+                    object result = initializeMethod.Invoke(
+                        instance,
+                        count == 3
+                            ? new object[] { descriptor, controller, this }
+                            : new object[] { descriptor, controller }
+                    );
+
+                    deleteFxMethod?.Invoke(result, null);
+                    deleteFxBTMethod?.Invoke(result, null);
+                    deleteParamMethod?.Invoke(result, null);
+                    deleteVRCExpressionsMethod?.Invoke(result, new object[] { menu, param });
+                    ParticleOptimizeMethod?.Invoke(result, null);
+                    changeObjMethod?.Invoke(result, null);
+                }
+                catch (System.Exception ex)
+                {
+                    UnityEngine.Debug.LogError(
+                        $"[ProcessParam] Error processing {type.Name}: {ex.Message}"
+                    );
+                    UnityEngine.Debug.LogError($"[ProcessParam] Stack trace: {ex.StackTrace}");
+                }
+            }
+        }
+
+        private void FinalizeAssets(VRCAvatarDescriptor descriptor)
+        {
             RemoveUnusedMenuControls(menu, param);
-            // 新規に複製した AnimatorController をアセットとして保存
             EditorUtility.SetDirty(controller);
             MarkAllMenusDirty(menu);
             EditorUtility.SetDirty(param);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            // AvatarDescriptor への適用と変更登録
             descriptor.baseAnimationLayers[4].animatorController = controller;
             descriptor.expressionsMenu = menu;
             descriptor.expressionParameters = param;
             EditorUtility.SetDirty(descriptor);
-
-            Debug.Log("最適化を実行しました！");
         }
 
-        /// <summary>
-        /// 使用されていないメニューコントロールを再帰的に削除
-        /// </summary>
         private static void RemoveUnusedMenuControls(
             VRCExpressionsMenu menu,
             VRCExpressionParameters param
@@ -1160,34 +594,43 @@ namespace jp.illusive_isc.MaoOptimizer
             if (menu == null)
                 return;
 
-            // このメニューの不要なコントロールを削除
             for (int i = menu.controls.Count - 1; i >= 0; i--)
             {
                 var control = menu.controls[i];
                 bool shouldRemove = true;
 
-                // パラメータ名が空の場合はスキップ
-                if (string.IsNullOrEmpty(control.parameter.name))
+                if (control.subMenu != null)
                 {
-                    shouldRemove = false;
-                }
-                else
-                {
-                    // パラメータが存在するかチェック
-                    if (param.parameters.Any(p => p.name == control.parameter.name))
+                    RemoveUnusedMenuControls(control.subMenu, param);
+
+                    if (control.subMenu.controls.Count == 0)
+                    {
+                        shouldRemove = true;
+                    }
+                    else
                     {
                         shouldRemove = false;
                     }
                 }
-
-                // サブメニューがある場合は再帰的にチェック
-                if (control.subMenu != null)
+                else
                 {
-                    RemoveUnusedMenuControls(control.subMenu, param);
-                    // サブメニューに有効なコントロールがある場合は削除しない
-                    if (control.subMenu.controls.Count > 0)
+                    if (string.IsNullOrEmpty(control.parameter.name))
                     {
                         shouldRemove = false;
+                    }
+                    else
+                    {
+                        bool paramExists = param.parameters.Any(p =>
+                            p.name == control.parameter.name
+                        );
+                        if (paramExists)
+                        {
+                            shouldRemove = false;
+                        }
+                        else
+                        {
+                            shouldRemove = true;
+                        }
                     }
                 }
 
@@ -1195,46 +638,6 @@ namespace jp.illusive_isc.MaoOptimizer
                 {
                     menu.controls.RemoveAt(i);
                 }
-            }
-        }
-
-        private static void DelColliderSettingByPathArray(
-            VRCAvatarDescriptor descriptor,
-            string[] colliderNames,
-            string[] pbPaths
-        )
-        {
-            foreach (var pbPath in pbPaths)
-            {
-                if (descriptor.transform.Find(pbPath))
-                {
-                    var physBone = descriptor
-                        .transform.Find(pbPath)
-                        .GetComponent<VRCPhysBoneBase>();
-                    if (physBone != null && physBone.colliders != null)
-                    {
-                        foreach (var colliderName in colliderNames)
-                        {
-                            for (int i = physBone.colliders.Count - 1; i >= 0; i--)
-                            {
-                                var collider = physBone.colliders[i];
-                                if (collider != null && collider.name.Contains(colliderName))
-                                {
-                                    physBone.colliders.RemoveAt(i);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private static void DelPBByPathArray(VRCAvatarDescriptor descriptor, string[] paths)
-        {
-            foreach (var path in paths)
-            {
-                IllMaoParam.DestroyComponent<VRCPhysBoneBase>(descriptor.transform.Find(path));
             }
         }
 
@@ -1246,17 +649,10 @@ namespace jp.illusive_isc.MaoOptimizer
             EditorUtility.SetDirty(menu);
 
             foreach (var control in menu.controls)
-            {
                 if (control.subMenu != null)
-                {
                     MarkAllMenusDirty(control.subMenu);
-                }
-            }
         }
 
-        /// <summary>
-        /// Expression Menu の複製（サブメニューも再帰的に複製）
-        /// </summary>
         public static VRCExpressionsMenu DuplicateExpressionMenu(
             VRCExpressionsMenu originalMenu,
             string parentPath,
@@ -1277,9 +673,6 @@ namespace jp.illusive_isc.MaoOptimizer
             );
         }
 
-        /// <summary>
-        /// Expression Menu の複製（サブメニューも再帰的に複製）
-        /// </summary>
         private static VRCExpressionsMenu DuplicateExpressionMenu(
             VRCExpressionsMenu originalMenu,
             string parentPath,
@@ -1293,11 +686,10 @@ namespace jp.illusive_isc.MaoOptimizer
         {
             if (originalMenu == null)
             {
-                Debug.LogError("元のExpression Menuがありません");
+                UnityEngine.Debug.LogError("元のExpression Menuがありません");
                 return null;
             }
 
-            // 最初の呼び出しの場合、processedMenusを初期化
             bool isRootCall = processedMenus == null;
             if (isRootCall)
             {
@@ -1305,7 +697,6 @@ namespace jp.illusive_isc.MaoOptimizer
                 processedIcons = new Dictionary<string, Texture2D>();
             }
 
-            // 既に処理済みのメニューの場合、キャッシュされたものを返す
             if (processedMenus.ContainsKey(originalMenu))
             {
                 return processedMenus[originalMenu];
@@ -1314,23 +705,19 @@ namespace jp.illusive_isc.MaoOptimizer
             VRCExpressionsMenu newMenu = Instantiate(originalMenu);
             newMenu.name = originalMenu.name;
 
-            // 処理済みリストに追加（循環参照を防ぐため、早めに追加）
             processedMenus[originalMenu] = newMenu;
 
             if (isRootCall)
             {
-                // ルートメニューの場合は、CreateAssetで作成
                 string menuAssetPath = Path.Combine(parentPath, originalMenu.name + ".asset");
                 AssetDatabase.CreateAsset(newMenu, menuAssetPath);
                 rootMenuAsset = newMenu;
             }
             else if (rootMenuAsset != null)
             {
-                // サブメニューの場合は、rootMenuAssetの子としてAddObjectToAssetで配置
                 AssetDatabase.AddObjectToAsset(newMenu, rootMenuAsset);
             }
 
-            // サブメニューの複製とアイコンのディープコピー
             for (int i = 0; i < newMenu.controls.Count; i++)
             {
                 var control = newMenu.controls[i];
@@ -1340,46 +727,51 @@ namespace jp.illusive_isc.MaoOptimizer
                     {
                         var originalControl = originalMenu.controls[i];
 
-                        // --- アイコンのディープコピー処理 ---
                         if (originalControl.icon != null)
                         {
                             string iconAssetPath = AssetDatabase.GetAssetPath(originalControl.icon);
                             if (!string.IsNullOrEmpty(iconAssetPath))
                             {
-                                string iconFileName = Path.GetFileName(iconAssetPath);
-                                string destPath = Path.Combine(iconPath, iconFileName);
-
-                                // 既に処理済みのアイコンかチェック
                                 if (processedIcons.ContainsKey(iconAssetPath))
                                 {
-                                    // 既に処理済みの場合、キャッシュされたテクスチャを使用
                                     control.icon = processedIcons[iconAssetPath];
                                 }
                                 else
                                 {
-                                    // 新しいアイコンの場合、コピーして処理
+                                    string iconFileName = Path.GetFileName(iconAssetPath);
+                                    string destPath = Path.Combine(iconPath, iconFileName);
+
                                     if (!File.Exists(destPath))
                                     {
                                         File.Copy(iconAssetPath, destPath, true);
-                                        AssetDatabase.ImportAsset(destPath);
                                     }
 
-                                    // コピーしたアイコンをロードして設定
+                                    AssetDatabase.ImportAsset(destPath);
                                     var copiedIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(
                                         destPath
                                     );
+
                                     if (copiedIcon != null)
                                     {
-                                        // Max Sizeを変更
                                         var importer =
                                             AssetImporter.GetAtPath(destPath) as TextureImporter;
-                                        if (importer != null)
+                                        if (importer != null && importer.maxTextureSize != 32)
                                         {
                                             importer.maxTextureSize = 32;
-                                            importer.SaveAndReimport();
+                                            AssetDatabase.ImportAsset(
+                                                destPath,
+                                                ImportAssetOptions.ForceUpdate
+                                            );
                                         }
 
-                                        // キャッシュに保存
+                                        if (rootMenuAsset != null)
+                                        {
+                                            AssetDatabase.AddObjectToAsset(
+                                                copiedIcon,
+                                                rootMenuAsset
+                                            );
+                                        }
+
                                         processedIcons[iconAssetPath] = copiedIcon;
                                         control.icon = copiedIcon;
                                     }
@@ -1392,7 +784,6 @@ namespace jp.illusive_isc.MaoOptimizer
                         control.icon = null;
                     }
                 }
-                // サブメニューの複製
                 if (control.subMenu != null)
                 {
                     control.subMenu = DuplicateExpressionMenu(

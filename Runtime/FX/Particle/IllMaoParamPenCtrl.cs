@@ -14,6 +14,7 @@ namespace jp.illusive_isc.MaoOptimizer
         HashSet<string> paramList = new();
         VRCAvatarDescriptor descriptor;
         AnimatorController animator;
+        bool HeartGunFlg;
 
         private static readonly List<string> Layers = new() { "PenCtrl_R", "PenCtrl_L" };
 
@@ -28,15 +29,17 @@ namespace jp.illusive_isc.MaoOptimizer
 
         public IllMaoParamPenCtrl Initialize(
             VRCAvatarDescriptor descriptor,
-            AnimatorController animator
+            AnimatorController animator,
+            IllMaoOptimizer optimizer
         )
         {
             this.descriptor = descriptor;
             this.animator = animator;
+            HeartGunFlg = optimizer.HeartGunFlg;
             return this;
         }
 
-        public IllMaoParamPenCtrl DeleteFx(bool HeartGunFlg)
+        public IllMaoParamPenCtrl DeleteFx()
         {
             if (!HeartGunFlg)
             {
@@ -172,7 +175,7 @@ namespace jp.illusive_isc.MaoOptimizer
             return this;
         }
 
-        public IllMaoParamPenCtrl DestroyObj()
+        public IllMaoParamPenCtrl ChangeObj()
         {
             DestroyObj(descriptor.transform.Find("Advanced/Particle/7"));
             DestroyObj(descriptor.transform.Find("Advanced/Constraint/Index_R_Constraint"));

@@ -91,7 +91,7 @@ namespace jp.illusive_isc.MaoOptimizer
             return this;
         }
 
-        public IllMaoParamClairvoyance DestroyObj()
+        public IllMaoParamClairvoyance ChangeObj()
         {
             DestroyObj(descriptor.transform.Find("Advanced/clairvoyance"));
             return this;

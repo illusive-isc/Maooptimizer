@@ -91,7 +91,7 @@ namespace jp.illusive_isc.MaoOptimizer
             return this;
         }
 
-        public IllMaoParamTPS DestroyObj()
+        public IllMaoParamTPS ChangeObj()
         {
             DestroyObj(descriptor.transform.Find("Advanced/TPS"));
             return this;

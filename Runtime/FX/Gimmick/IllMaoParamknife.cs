@@ -105,7 +105,7 @@ namespace jp.illusive_isc.MaoOptimizer
             return this;
         }
 
-        public IllMaoParamknife DestroyObj()
+        public IllMaoParamknife ChangeObj()
         {
             DestroyObj(descriptor.transform.Find("Advanced/knife"));
             DestroyObj(descriptor.transform.Find("Advanced/knifeL"));

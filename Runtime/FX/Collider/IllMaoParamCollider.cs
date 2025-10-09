@@ -145,7 +145,7 @@ namespace jp.illusive_isc.MaoOptimizer
             return this;
         }
 
-        public IllMaoParamCollider DestroyObj()
+        public IllMaoParamCollider ChangeObj()
         {
             DestroyObj(descriptor.transform.Find("Advanced/Gimmick1"));
             return this;

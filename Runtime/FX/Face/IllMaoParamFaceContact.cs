@@ -21,14 +21,13 @@ namespace jp.illusive_isc.MaoOptimizer
         public IllMaoParamFaceContact Initialize(
             VRCAvatarDescriptor descriptor,
             AnimatorController animator,
-            bool kamitukiFlg,
-            bool nadeFlg
+            IllMaoOptimizer optimizer
         )
         {
             this.descriptor = descriptor;
             this.animator = animator;
-            this.kamitukiFlg = kamitukiFlg;
-            this.nadeFlg = nadeFlg;
+            kamitukiFlg = optimizer.kamitukiFlg;
+            nadeFlg = optimizer.nadeFlg;
             return this;
         }
 

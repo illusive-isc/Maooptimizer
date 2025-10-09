@@ -52,7 +52,8 @@ namespace jp.illusive_isc.MaoOptimizer
 
         public IllMaoParamDef Initialize(
             VRCAvatarDescriptor descriptor,
-            AnimatorController animator
+            AnimatorController animator,
+            IllMaoOptimizer optimizer
         )
         {
             this.descriptor = descriptor;
@@ -249,7 +250,7 @@ namespace jp.illusive_isc.MaoOptimizer
             return this;
         }
 
-        public IllMaoParamDef DestroyObj()
+        public IllMaoParamDef ChangeObj()
         {
             DestroyObj(descriptor.transform.Find("Advanced/Ground"));
             DestroyObj(descriptor.transform.Find("Advanced/food/food hand contact L"));

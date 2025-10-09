@@ -27,14 +27,13 @@ namespace jp.illusive_isc.MaoOptimizer
         public IllMaoParamFaceGesture Initialize(
             VRCAvatarDescriptor descriptor,
             AnimatorController animator,
-            bool FaceGestureFlg,
-            bool FaceLockFlg
+            IllMaoOptimizer optimizer
         )
         {
             this.descriptor = descriptor;
             this.animator = animator;
-            this.FaceGestureFlg = FaceGestureFlg;
-            this.FaceLockFlg = FaceLockFlg;
+            FaceGestureFlg = optimizer.FaceGestureFlg;
+            FaceLockFlg = optimizer.FaceLockFlg;
             return this;
         }
 

@@ -13,6 +13,11 @@ namespace jp.illusive_isc.MaoOptimizer
     {
         VRCAvatarDescriptor descriptor;
         AnimatorController animator;
+        bool ClothFlg;
+        bool ClothFlg1;
+        bool ClothFlg2;
+        bool ClothFlg5;
+
         private static readonly List<string> MenuParameters = new()
         {
             "mao_Outer",
@@ -25,11 +30,16 @@ namespace jp.illusive_isc.MaoOptimizer
 
         public IllMaoParamCloth Initialize(
             VRCAvatarDescriptor descriptor,
-            AnimatorController animator
+            AnimatorController animator,
+            IllMaoOptimizer optimizer
         )
         {
             this.descriptor = descriptor;
             this.animator = animator;
+            ClothFlg = optimizer.ClothFlg;
+            ClothFlg1 = optimizer.ClothFlg1;
+            ClothFlg2 = optimizer.ClothFlg2;
+            ClothFlg5 = optimizer.ClothFlg5;
             return this;
         }
 
@@ -104,8 +114,18 @@ namespace jp.illusive_isc.MaoOptimizer
             return this;
         }
 
-        public IllMaoParamCloth DestroyObjects(bool ClothFlg2)
+        public IllMaoParamCloth ChangeObj()
         {
+            if (descriptor.transform.Find("tanktop") is Transform itemObj1)
+            {
+                itemObj1.gameObject.SetActive(ClothFlg1);
+            }
+            if (descriptor.transform.Find("Tsyatu") is Transform itemObj2)
+            {
+                itemObj2.gameObject.SetActive(ClothFlg5);
+            }
+            if (!ClothFlg)
+                return this;
             if (ClothFlg2)
             {
                 DestroyObj(descriptor.transform.Find("underwear"));

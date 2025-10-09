@@ -138,7 +138,7 @@ namespace jp.illusive_isc.MaoOptimizer
             return this;
         }
 
-        public IllMaoParamHeartGun DestroyObj()
+        public IllMaoParamHeartGun ChangeObj()
         {
             DestroyObj(descriptor.transform.Find("Advanced/HeartGunR"));
             DestroyObj(descriptor.transform.Find("Advanced/HeartGunL"));

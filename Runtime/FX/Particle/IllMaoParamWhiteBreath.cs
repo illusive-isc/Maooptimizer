@@ -82,7 +82,7 @@ namespace jp.illusive_isc.MaoOptimizer
             return this;
         }
 
-        public IllMaoParamWhiteBreath DestroyObj()
+        public IllMaoParamWhiteBreath ChangeObj()
         {
             DestroyObj(descriptor.transform.Find("Advanced/Particle/1"));
             return this;

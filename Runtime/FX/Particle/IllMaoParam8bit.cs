@@ -81,7 +81,7 @@ namespace jp.illusive_isc.MaoOptimizer
             return this;
         }
 
-        public IllMaoParam8bit DestroyObj()
+        public IllMaoParam8bit ChangeObj()
         {
             DestroyObj(descriptor.transform.Find("Advanced/Particle/5"));
             return this;

@@ -13,6 +13,14 @@ namespace jp.illusive_isc.MaoOptimizer
     {
         VRCAvatarDescriptor descriptor;
         AnimatorController animator;
+
+        bool EarTailFlg1 = false;
+
+        bool EarTailFlg2 = false;
+
+        bool EarTailFlg3 = false;
+
+        bool EarTailFlg4 = false;
         private static readonly List<string> MenuParameters = new()
         {
             "mao_TailBelt",
@@ -24,16 +32,23 @@ namespace jp.illusive_isc.MaoOptimizer
 
         public IllMaoParamEarTail Initialize(
             VRCAvatarDescriptor descriptor,
-            AnimatorController animator
+            AnimatorController animator,
+            IllMaoOptimizer optimizer
         )
         {
             this.descriptor = descriptor;
             this.animator = animator;
+            EarTailFlg1 = optimizer.EarTailFlg1;
+            EarTailFlg2 = optimizer.EarTailFlg2;
+            EarTailFlg3 = optimizer.EarTailFlg3;
+            EarTailFlg4 = optimizer.EarTailFlg4;
             return this;
         }
 
         public IllMaoParamEarTail DeleteFx()
         {
+            if (!EarTailFlg3)
+                return this;
             animator.layers = animator
                 .layers.Where(layer => !Layers.Contains(layer.name))
                 .ToArray();
@@ -77,8 +92,7 @@ namespace jp.illusive_isc.MaoOptimizer
 
         public IllMaoParamEarTail DeleteVRCExpressions(
             VRCExpressionsMenu menu,
-            VRCExpressionParameters param,
-            bool earTailFlg3
+            VRCExpressionParameters param
         )
         {
             param.parameters = param
@@ -103,7 +117,7 @@ namespace jp.illusive_isc.MaoOptimizer
                     break;
                 }
             }
-            if (earTailFlg3)
+            if (EarTailFlg3)
                 foreach (var control1 in menu.controls)
                 {
                     if (control1.name == "Gimmick")
@@ -125,18 +139,18 @@ namespace jp.illusive_isc.MaoOptimizer
             return this;
         }
 
-        public IllMaoParamEarTail DestroyObj(bool earTailFlg1, bool earTailFlg2, bool earTailFlg4)
+        public IllMaoParamEarTail ChangeObj()
         {
-            if (earTailFlg1)
+            if (EarTailFlg1)
                 DestroyObj(descriptor.transform.Find("ear"));
 
-            if (earTailFlg4)
+            if (EarTailFlg4)
             {
                 if (descriptor.transform.Find("tail") is Transform Obj)
                     Obj.gameObject.GetComponent<SkinnedMeshRenderer>().SetBlendShapeWeight(0, 100);
                 DestroyObj(descriptor.transform.Find("tail_belt"));
             }
-            if (earTailFlg2)
+            if (EarTailFlg2)
             {
                 if (descriptor.transform.Find("outer") is Transform outer)
                     outer

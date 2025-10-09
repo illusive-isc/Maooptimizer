@@ -91,7 +91,7 @@ namespace jp.illusive_isc.MaoOptimizer
             return this;
         }
 
-        public IllMaoParamCandy DestroyObj()
+        public IllMaoParamCandy ChangeObj()
         {
             DestroyObj(descriptor.transform.Find("Advanced/food"));
             return this;
